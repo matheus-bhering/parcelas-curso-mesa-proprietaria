@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documento de Parcelamento</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: white;
+            padding: 40px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #FFDF00;
+        }
+        
+        .logo {
+            width: 180px;
+            height: 60px;
+            background: #FFDF00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 24px;
+            color: #005AA0;
+            border-radius: 4px;
+        }
+        
+        .title {
+            margin-bottom: 30px;
+        }
+        
+        .title h1 {
+            font-size: 24px;
+            color: #005AA0;
+            margin-bottom: 10px;
+        }
+        
+        .purchase-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #005AA0;
+        }
+        
+        .purchase-info h2 {
+            font-size: 18px;
+            color: #005AA0;
+            margin-bottom: 15px;
+        }
+        
+        .purchase-item {
+            margin-bottom: 10px;
+            padding: 8px 0;
+            line-height: 1.6;
+        }
+        
+        .installments {
+            margin-top: 30px;
+        }
+        
+        .installments h2 {
+            font-size: 20px;
+            color: #005AA0;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #FFDF00;
+        }
+        
+        .installment {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .installment:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .installment-number {
+            font-weight: bold;
+            color: #005AA0;
+            font-size: 16px;
+            min-width: 100px;
+        }
+        
+        .installment-details {
+            flex: 1;
+            padding: 0 15px;
+        }
+        
+        .installment-value {
+            font-weight: bold;
+            color: #28a745;
+            font-size: 18px;
+            min-width: 120px;
+            text-align: right;
+        }
+        
+        .first-installment {
+            background: #e8f4f8;
+            border: 2px solid #005AA0;
+        }
+        
+        .observation {
+            margin-top: 30px;
+            padding: 15px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+        }
+        
+        .observation strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #856404;
+        }
+        
+        @media print {
+            body {
+                padding: 20px;
+            }
+            
+            .installment:hover {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <span style="font-size: 28px;">BB</span>
+            </div>
+        </div>
+        
+        <div class="title">
+            <h1>Demonstrativo de Parcelamento</h1>
+        </div>
+        
+        <div class="purchase-info">
+            <h2>Informações da Compra</h2>
+            <div class="purchase-item">
+                <strong>Produto:</strong> Mesa Proprietária Canario Capital Treinamentos Ltda<br>
+                <strong>Valor Total:</strong> R$ 676,64<br>
+                <strong>Parcelas:</strong> 8x de R$ 84,58
+            </div>
+            <div class="purchase-item" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
+                <strong>Produto:</strong> Upgrade Plataforma Profit Pro<br>
+                <strong>Valor Total:</strong> R$ 168,88<br>
+                <strong>Parcelas:</strong> Pagamento único na 1ª parcela
+            </div>
+        </div>
+        
+        <div class="installments">
+            <h2>Cronograma de Parcelas</h2>
+            
+            <div class="installment first-installment">
+                <div class="installment-number">1ª Parcela</div>
+                <div class="installment-details">
+                    <strong>Vencimento: 10/12/2025 (Dezembro)</strong><br>
+                    R$ 168,88 - Upgrade Plataforma Profit Pro<br>
+                    R$ 84,58 - Mesa Proprietária
+                </div>
+                <div class="installment-value">R$ 253,46</div>
+            </div>
+            
+            <div class="installment">
+                <div class="installment-number">2ª Parcela</div>
+                <div class="installment-details">
+                    <strong>Vencimento: 10/01/2026 (Janeiro)</strong><br>
+                    2ª parcela Mesa Proprietária
+                </div>
+                <div class="installment-value">R$ 84,58</div>
+            </div>
+            
+            <div class="installment">
+                <div class="installment-number">3ª Parcela</div>
+                <div class="installment-details">
+                    <strong>Vencimento: 10/02/2026 (Fevereiro)</strong><br>
+                    3ª parcela Mesa Proprietária
+                </div>
+                <div class="installment-value">R$ 84,58</div>
+            </div>
+            
+            <div class="installment">
+                <div class="installment-number">4ª Parcela</div>
+                <div class="installment-details">
+                    <strong>Vencimento: 10/03/2026 (Março)</strong><br>
+                    4ª parcela Mesa Proprietária
+                </div>
+                <div class="installment-value">R$ 84,58</div>
+            </div>
+            
+            <div class="installment">
+                <div class="installment-number">5ª Parcela</div>
+                <div class="installment-details">
+                    <strong>Vencimento: 10/04/2026 (Abril)</strong><br>
+                    5ª parcela Mesa Proprietária
+                </div>
+                <div class="installment-value">R$ 84,58</div>
+            </div>
+            
+            <div class="installment">
+                <div class="installment-number">6ª Parcela</div>
+                <div class="installment-details">
+                    <strong>Vencimento: 10/05/2026 (Maio)</strong><br>
+                    6ª parcela Mesa Proprietária
+                </div>
+                <div class="installment-value">R$ 84,58</div>
+            </div>
+            
+            <div class="installment">
+                <div class="installment-number">7ª Parcela</div>
+                <div class="installment-details">
+                    <strong>Vencimento: 10/06/2026 (Junho)</strong><br>
+                    7ª parcela Mesa Proprietária
+                </div>
+                <div class="installment-value">R$ 84,58</div>
+            </div>
+            
+            <div class="installment">
+                <div class="installment-number">8ª Parcela</div>
+                <div class="installment-details">
+                    <strong>Vencimento: 10/07/2026 (Julho)</strong><br>
+                    8ª parcela Mesa Proprietária
+                </div>
+                <div class="installment-value">R$ 84,58</div>
+            </div>
+        </div>
+        
+        <div class="observation">
+            <strong>Observação:</strong>
+            Apenas a primeira parcela inclui o valor do Upgrade da Plataforma Profit Pro (R$ 168,88). Da segunda até a oitava parcela, será cobrado apenas o valor da Mesa Proprietária (R$ 84,58). Todas as parcelas vencem no dia 10 de cada mês.
+        </div>
+    </div>
+</body>
+</html>
