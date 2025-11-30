@@ -596,16 +596,31 @@
             document.getElementById('totalPaid').textContent = `R$ ${totalPaid.toFixed(2).replace('.', ',')}`;
         }
 
-        // Toggle do modo admin
+        // Toggle do modo admin com senha
         document.getElementById('adminMode').addEventListener('change', function() {
-            const controls = document.querySelectorAll('.admin-controls');
-            controls.forEach(control => {
-                if (this.checked) {
-                    control.classList.add('active');
+            if (this.checked) {
+                // Solicita a senha
+                const senha = prompt('Digite a senha de administrador:');
+                
+                // Verifica se a senha está correta
+                if (senha === 'MS-parcela-wevertton8x') {
+                    // Ativa o modo admin
+                    const controls = document.querySelectorAll('.admin-controls');
+                    controls.forEach(control => {
+                        control.classList.add('active');
+                    });
                 } else {
-                    control.classList.remove('active');
+                    // Senha incorreta - desmarca o checkbox
+                    alert('Senha incorreta! Acesso negado.');
+                    this.checked = false;
                 }
-            });
+            } else {
+                // Desativa o modo admin
+                const controls = document.querySelectorAll('.admin-controls');
+                controls.forEach(control => {
+                    control.classList.remove('active');
+                });
+            }
         });
 
         // Carrega o estado ao iniciar a página
