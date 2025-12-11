@@ -1,709 +1,134 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documento de Parcelamento</title>
-    <style>
-        @page {
-            size: A4;
-            margin: 0;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            padding: 20px;
-            color: #333;
-        }
-        
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 3px solid #FFDF00;
-        }
-        
-        .logo {
-            width: auto;
-            padding: 15px 25px;
-            background: #FFDF00;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 18px;
-            color: #005AA0;
-            border-radius: 4px;
-        }
-        
-        .admin-toggle {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            padding: 8px 16px;
-            background: #f0f0f0;
-            border-radius: 20px;
-            transition: all 0.3s;
-        }
-        
-        .admin-toggle:hover {
-            background: #e0e0e0;
-        }
-        
-        .admin-toggle input[type="checkbox"] {
-            width: 40px;
-            height: 20px;
-            cursor: pointer;
-        }
-        
-        .title {
-            margin-bottom: 30px;
-        }
-        
-        .title h1 {
-            font-size: 24px;
-            color: #005AA0;
-            margin-bottom: 10px;
-        }
-        
-        .purchase-info {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            border-left: 4px solid #005AA0;
-        }
-        
-        .purchase-info h2 {
-            font-size: 18px;
-            color: #005AA0;
-            margin-bottom: 15px;
-        }
-        
-        .purchase-item {
-            margin-bottom: 10px;
-            padding: 8px 0;
-            line-height: 1.6;
-        }
-        
-        .installments {
-            margin-top: 30px;
-        }
-        
-        .installments h2 {
-            font-size: 20px;
-            color: #005AA0;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #FFDF00;
-        }
-        
-        .installment {
-            background: white;
-            border: 2px solid #ddd;
-            padding: 15px;
-            margin-bottom: 12px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .installment::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 6px;
-            background: #ddd;
-            transition: all 0.3s;
-        }
-        
-        .installment:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        
-        .installment.paid {
-            background: linear-gradient(135deg, #d4edda 0%, #f1f9f3 100%);
-            border-color: #28a745;
-        }
-        
-        .installment.paid::before {
-            background: #28a745;
-        }
-        
-        .installment-number {
-            font-weight: bold;
-            color: #005AA0;
-            font-size: 16px;
-            min-width: 100px;
-        }
-        
-        .installment.paid .installment-number {
-            color: #28a745;
-        }
-        
-        .installment-details {
-            flex: 1;
-            padding: 0 15px;
-        }
-        
-        .installment-value {
-            font-weight: bold;
-            color: #666;
-            font-size: 18px;
-            min-width: 120px;
-            text-align: right;
-        }
-        
-        .installment.paid .installment-value {
-            color: #28a745;
-        }
-        
-        .first-installment {
-            border: 2px solid #005AA0;
-        }
-        
-        .first-installment::before {
-            background: #005AA0;
-        }
-        
-        .first-installment.paid {
-            border-color: #28a745;
-        }
-        
-        .status-badge {
-            display: none;
-            align-items: center;
-            gap: 5px;
-            padding: 6px 12px;
-            background: #28a745;
-            color: white;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-left: 10px;
-        }
-        
-        .installment.paid .status-badge {
-            display: flex;
-        }
-        
-        .admin-controls {
-            display: none;
-            margin-left: 15px;
-        }
-        
-        .admin-controls.active {
-            display: block;
-        }
-        
-        .pay-button {
-            padding: 8px 16px;
-            background: #28a745;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-        
-        .pay-button:hover {
-            background: #218838;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
-        }
-        
-        .unpay-button {
-            padding: 8px 16px;
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-        
-        .unpay-button:hover {
-            background: #c82333;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
-        }
-        
-        .observation {
-            margin-top: 30px;
-            padding: 15px;
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            border-radius: 4px;
-        }
-        
-        .observation strong {
-            display: block;
-            margin-bottom: 5px;
-            color: #856404;
-        }
-        
-        .summary {
-            margin-top: 30px;
-            padding: 20px;
-            background: linear-gradient(135deg, #e3f2fd 0%, #f5f5f5 100%);
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-around;
-            text-align: center;
-        }
-        
-        .summary-item {
-            flex: 1;
-        }
-        
-        .summary-item h3 {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 8px;
-        }
-        
-        .summary-item .value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #005AA0;
-        }
-        
-        .summary-item .value.paid {
-            color: #28a745;
-        }
-        
-        .summary-item .value.pending {
-            color: #ffc107;
-        }
+<script>
+    const API_URL   = 'https://script.google.com/macros/s/AKfycbzaSRjrP1bfjWgqiiWrOECu169sxqOoGAKRVRGZcSqW5pRwk461eDSxCfvsgKCTQFzi/exec';
+    const API_TOKEN = 'JkiZwfLFSO3MbBNWdCJOhJHgtgI0EJUFZOifVcU9sXbHoGFhrb0nopePh8jRwJF7';
 
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-        }
-        
-        @media print {
-            body {
-                padding: 20px;
-                background: white;
-            }
-            
-            .container {
-                box-shadow: none;
-            }
-            
-            .admin-toggle,
-            .admin-controls {
-                display: none !important;
-            }
-            
-            .installment:hover {
-                box-shadow: none;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-
-            .container {
-                padding: 20px;
-                border-radius: 8px;
-            }
-            
-            .header {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .logo {
-                font-size: 16px;
-                padding: 12px 20px;
-            }
-
-            .title h1 {
-                font-size: 20px;
-            }
-            
-            .installment {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-                padding: 12px;
-            }
-            
-            .installment-number,
-            .installment-value {
-                min-width: auto;
-            }
-
-            .installment-details {
-                padding: 0;
-                width: 100%;
-            }
-
-            .installment-value {
-                text-align: left;
-                font-size: 16px;
-            }
-
-            .status-badge {
-                margin-left: 0;
-                margin-top: 5px;
-            }
-
-            .admin-controls {
-                margin-left: 0;
-                margin-top: 10px;
-                width: 100%;
-            }
-
-            .pay-button, .unpay-button {
-                width: 100%;
-                padding: 10px;
-            }
-            
-            .summary {
-                flex-direction: column;
-                gap: 15px;
-                padding: 15px;
-            }
-
-            .summary-item .value {
-                font-size: 20px;
-            }
-
-            .purchase-info {
-                padding: 15px;
-            }
-
-            .purchase-info h2 {
-                font-size: 16px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="loading" id="loading">Carregando dados...</div>
-        
-        <div id="content" style="display: none;">
-            <div class="header">
-                <div class="logo">
-                    Acompanhamento de fatura
-                </div>
-                <label class="admin-toggle">
-                    <span>Modo Admin</span>
-                    <input type="checkbox" id="adminMode">
-                </label>
-            </div>
-            
-            <div class="title">
-                <h1>Wevertton Oliveira - Vencimento todo dia 10</h1>
-            </div>
-            
-            <div class="purchase-info">
-                <h2>Informações da Compra</h2>
-                <div class="purchase-item">
-                    <strong>Produto:</strong> Mesa Proprietária Canario Capital Treinamentos Ltda<br>
-                    <strong>Valor Total:</strong> R$ 676,64<br>
-                    <strong>Parcelas:</strong> 8x de R$ 84,58
-                </div>
-                <div class="purchase-item" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
-                    <strong>Produto:</strong> Upgrade Plataforma Profit Pro<br>
-                    <strong>Valor Total:</strong> R$ 168,88<br>
-                    <strong>Parcelas:</strong> Pagamento único na 1ª parcela
-                </div>
-            </div>
-            
-            <div class="summary">
-                <div class="summary-item">
-                    <h3>Total de Parcelas</h3>
-                    <div class="value">8</div>
-                </div>
-                <div class="summary-item">
-                    <h3>Parcelas Pagas</h3>
-                    <div class="value paid" id="paidCount">0</div>
-                </div>
-                <div class="summary-item">
-                    <h3>Parcelas Pendentes</h3>
-                    <div class="value pending" id="pendingCount">8</div>
-                </div>
-                <div class="summary-item">
-                    <h3>Valor Total Pago</h3>
-                    <div class="value paid" id="totalPaid">R$ 0,00</div>
-                </div>
-            </div>
-            
-            <div class="installments">
-                <h2>Cronograma de Parcelas</h2>
-                
-                <div class="installment first-installment" data-installment="1" data-value="253.46">
-                    <div class="installment-number">1ª Parcela</div>
-                    <div class="installment-details">
-                        <strong>Vencimento: 10/12/2025 (Dezembro)</strong><br>
-                        R$ 168,88 - Upgrade Plataforma Profit Pro<br>
-                        R$ 84,58 - Mesa Proprietária
-                    </div>
-                    <div class="installment-value">R$ 253,46</div>
-                    <div class="status-badge">✓ PAGO</div>
-                    <div class="admin-controls">
-                        <button class="pay-button" onclick="markAsPaid(1)">Marcar como Pago</button>
-                        <button class="unpay-button" onclick="markAsUnpaid(1)" style="display:none;">Desmarcar</button>
-                    </div>
-                </div>
-                
-                <div class="installment" data-installment="2" data-value="84.58">
-                    <div class="installment-number">2ª Parcela</div>
-                    <div class="installment-details">
-                        <strong>Vencimento: 10/01/2026 (Janeiro)</strong><br>
-                        2ª parcela Mesa Proprietária
-                    </div>
-                    <div class="installment-value">R$ 84,58</div>
-                    <div class="status-badge">✓ PAGO</div>
-                    <div class="admin-controls">
-                        <button class="pay-button" onclick="markAsPaid(2)">Marcar como Pago</button>
-                        <button class="unpay-button" onclick="markAsUnpaid(2)" style="display:none;">Desmarcar</button>
-                    </div>
-                </div>
-                
-                <div class="installment" data-installment="3" data-value="84.58">
-                    <div class="installment-number">3ª Parcela</div>
-                    <div class="installment-details">
-                        <strong>Vencimento: 10/02/2026 (Fevereiro)</strong><br>
-                        3ª parcela Mesa Proprietária
-                    </div>
-                    <div class="installment-value">R$ 84,58</div>
-                    <div class="status-badge">✓ PAGO</div>
-                    <div class="admin-controls">
-                        <button class="pay-button" onclick="markAsPaid(3)">Marcar como Pago</button>
-                        <button class="unpay-button" onclick="markAsUnpaid(3)" style="display:none;">Desmarcar</button>
-                    </div>
-                </div>
-                
-                <div class="installment" data-installment="4" data-value="84.58">
-                    <div class="installment-number">4ª Parcela</div>
-                    <div class="installment-details">
-                        <strong>Vencimento: 10/03/2026 (Março)</strong><br>
-                        4ª parcela Mesa Proprietária
-                    </div>
-                    <div class="installment-value">R$ 84,58</div>
-                    <div class="status-badge">✓ PAGO</div>
-                    <div class="admin-controls">
-                        <button class="pay-button" onclick="markAsPaid(4)">Marcar como Pago</button>
-                        <button class="unpay-button" onclick="markAsUnpaid(4)" style="display:none;">Desmarcar</button>
-                    </div>
-                </div>
-                
-                <div class="installment" data-installment="5" data-value="84.58">
-                    <div class="installment-number">5ª Parcela</div>
-                    <div class="installment-details">
-                        <strong>Vencimento: 10/04/2026 (Abril)</strong><br>
-                        5ª parcela Mesa Proprietária
-                    </div>
-                    <div class="installment-value">R$ 84,58</div>
-                    <div class="status-badge">✓ PAGO</div>
-                    <div class="admin-controls">
-                        <button class="pay-button" onclick="markAsPaid(5)">Marcar como Pago</button>
-                        <button class="unpay-button" onclick="markAsUnpaid(5)" style="display:none;">Desmarcar</button>
-                    </div>
-                </div>
-                
-                <div class="installment" data-installment="6" data-value="84.58">
-                    <div class="installment-number">6ª Parcela</div>
-                    <div class="installment-details">
-                        <strong>Vencimento: 10/05/2026 (Maio)</strong><br>
-                        6ª parcela Mesa Proprietária
-                    </div>
-                    <div class="installment-value">R$ 84,58</div>
-                    <div class="status-badge">✓ PAGO</div>
-                    <div class="admin-controls">
-                        <button class="pay-button" onclick="markAsPaid(6)">Marcar como Pago</button>
-                        <button class="unpay-button" onclick="markAsUnpaid(6)" style="display:none;">Desmarcar</button>
-                    </div>
-                </div>
-                
-                <div class="installment" data-installment="7" data-value="84.58">
-                    <div class="installment-number">7ª Parcela</div>
-                    <div class="installment-details">
-                        <strong>Vencimento: 10/06/2026 (Junho)</strong><br>
-                        7ª parcela Mesa Proprietária
-                    </div>
-                    <div class="installment-value">R$ 84,58</div>
-                    <div class="status-badge">✓ PAGO</div>
-                    <div class="admin-controls">
-                        <button class="pay-button" onclick="markAsPaid(7)">Marcar como Pago</button>
-                        <button class="unpay-button" onclick="markAsUnpaid(7)" style="display:none;">Desmarcar</button>
-                    </div>
-                </div>
-                
-                <div class="installment" data-installment="8" data-value="84.58">
-                    <div class="installment-number">8ª Parcela</div>
-                    <div class="installment-details">
-                        <strong>Vencimento: 10/07/2026 (Julho)</strong><br>
-                        8ª parcela Mesa Proprietária
-                    </div>
-                    <div class="installment-value">R$ 84,58</div>
-                    <div class="status-badge">✓ PAGO</div>
-                    <div class="admin-controls">
-                        <button class="pay-button" onclick="markAsPaid(8)">Marcar como Pago</button>
-                        <button class="unpay-button" onclick="markAsUnpaid(8)" style="display:none;">Desmarcar</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="observation">
-                <strong>Observação:</strong>
-                Apenas a primeira parcela inclui o valor do Upgrade da Plataforma Profit Pro (R$ 168,88). Da segunda até a oitava parcela, será cobrado apenas o valor da Mesa Proprietária (R$ 84,58). Todas as parcelas vencem no dia 10 de cada mês.
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const STORAGE_KEY = 'wevertton-installments';
-
-        // Carrega o estado das parcelas do armazenamento compartilhado
-        async function loadPaymentStatus() {
-            try {
-                const result = await window.storage.get(STORAGE_KEY, true);
-                
-                if (result && result.value) {
-                    const status = JSON.parse(result.value);
-                    status.forEach(installmentNum => {
-                        const element = document.querySelector(`[data-installment="${installmentNum}"]`);
-                        if (element) {
-                            element.classList.add('paid');
-                            const payBtn = element.querySelector('.pay-button');
-                            const unpayBtn = element.querySelector('.unpay-button');
-                            if (payBtn) payBtn.style.display = 'none';
-                            if (unpayBtn) unpayBtn.style.display = 'inline-block';
-                        }
-                    });
-                }
-                
-                updateSummary();
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('content').style.display = 'block';
-            } catch (error) {
-                console.log('Nenhum dado salvo ainda ou erro ao carregar:', error);
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('content').style.display = 'block';
-                updateSummary();
-            }
-        }
-
-        // Salva o estado das parcelas no armazenamento compartilhado
-        async function savePaymentStatus() {
-            try {
-                const paidInstallments = [];
-                document.querySelectorAll('.installment.paid').forEach(el => {
-                    paidInstallments.push(parseInt(el.dataset.installment));
-                });
-                
-                await window.storage.set(STORAGE_KEY, JSON.stringify(paidInstallments), true);
-                console.log('Status salvo com sucesso!');
-            } catch (error) {
-                console.error('Erro ao salvar status:', error);
-                alert('Erro ao salvar o status. Tente novamente.');
-            }
-        }
-
-        // Marca uma parcela como paga
-        async function markAsPaid(installmentNum) {
-            const element = document.querySelector(`[data-installment="${installmentNum}"]`);
-            element.classList.add('paid');
-            
-            const payBtn = element.querySelector('.pay-button');
-            const unpayBtn = element.querySelector('.unpay-button');
-            payBtn.style.display = 'none';
-            unpayBtn.style.display = 'inline-block';
-            
-            await savePaymentStatus();
-            updateSummary();
-        }
-
-        // Desmarca uma parcela como paga
-        async function markAsUnpaid(installmentNum) {
-            const element = document.querySelector(`[data-installment="${installmentNum}"]`);
-            element.classList.remove('paid');
-            
-            const payBtn = element.querySelector('.pay-button');
-            const unpayBtn = element.querySelector('.unpay-button');
-            payBtn.style.display = 'inline-block';
-            unpayBtn.style.display = 'none';
-            
-            await savePaymentStatus();
-            updateSummary();
-        }
-
-        // Atualiza o resumo de parcelas
-        function updateSummary() {
-            const paidInstallments = document.querySelectorAll('.installment.paid');
-            const paidCount = paidInstallments.length;
-            const pendingCount = 8 - paidCount;
-            
-            let totalPaid = 0;
-            paidInstallments.forEach(el => {
-                totalPaid += parseFloat(el.dataset.value);
+    // Carrega o estado das parcelas da planilha (via Apps Script)
+    async function loadPaymentStatus() {
+        try {
+            const res = await fetch(`${API_URL}?token=${API_TOKEN}`, {
+                method: 'GET'
             });
-            
-            document.getElementById('paidCount').textContent = paidCount;
-            document.getElementById('pendingCount').textContent = pendingCount;
-            document.getElementById('totalPaid').textContent = `R$ ${totalPaid.toFixed(2).replace('.', ',')}`;
-        }
 
-        // Toggle do modo admin com senha
-        document.getElementById('adminMode').addEventListener('change', function() {
-            if (this.checked) {
-                const senha = prompt('Digite a senha de administrador:');
-                
-                if (senha === 'MS-parcela-wevertton8x') {
-                    const controls = document.querySelectorAll('.admin-controls');
-                    controls.forEach(control => {
-                        control.classList.add('active');
-                    });
-                } else {
-                    alert('Senha incorreta! Acesso negado.');
-                    this.checked = false;
-                }
-            } else {
-                const controls = document.querySelectorAll('.admin-controls');
-                controls.forEach(control => {
-                    control.classList.remove('active');
-                });
+            if (!res.ok) {
+                console.error('Erro ao carregar status das parcelas');
+                return;
             }
+
+            const data = await res.json();
+            const status = data.paidInstallments || [];
+
+            status.forEach(installmentNum => {
+                const element = document.querySelector(`[data-installment="${installmentNum}"]`);
+                if (element) {
+                    element.classList.add('paid');
+                    const payBtn = element.querySelector('.pay-button');
+                    const unpayBtn = element.querySelector('.unpay-button');
+                    if (payBtn) payBtn.style.display = 'none';
+                    if (unpayBtn) unpayBtn.style.display = 'inline-block';
+                }
+            });
+
+            updateSummary();
+        } catch (err) {
+            console.error('Erro na requisição de loadPaymentStatus:', err);
+        }
+    }
+
+    // Salva o estado atual das parcelas na planilha (via Apps Script)
+    async function savePaymentStatus() {
+        const paidInstallments = [];
+        document.querySelectorAll('.installment.paid').forEach(el => {
+            paidInstallments.push(parseInt(el.dataset.installment));
         });
 
-        // Carrega o estado ao iniciar a página
-        window.addEventListener('DOMContentLoaded', loadPaymentStatus);
-    </script>
-</body>
-</html>
+        try {
+            const res = await fetch(`${API_URL}?token=${API_TOKEN}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ paidInstallments })
+            });
+
+            if (!res.ok) {
+                console.error('Erro ao salvar status das parcelas');
+            }
+        } catch (err) {
+            console.error('Erro na requisição de savePaymentStatus:', err);
+        }
+    }
+
+    // Marca uma parcela como paga (usado nos onclick do HTML)
+    async function markAsPaid(installmentNum) {
+        const element = document.querySelector(`[data-installment="${installmentNum}"]`);
+        if (!element) return;
+
+        element.classList.add('paid');
+        
+        const payBtn = element.querySelector('.pay-button');
+        const unpayBtn = element.querySelector('.unpay-button');
+        if (payBtn) payBtn.style.display = 'none';
+        if (unpayBtn) unpayBtn.style.display = 'inline-block';
+        
+        updateSummary();
+        await savePaymentStatus();
+    }
+
+    // Desmarca uma parcela como paga (usado nos onclick do HTML)
+    async function markAsUnpaid(installmentNum) {
+        const element = document.querySelector(`[data-installment="${installmentNum}"]`);
+        if (!element) return;
+
+        element.classList.remove('paid');
+        
+        const payBtn = element.querySelector('.pay-button');
+        const unpayBtn = element.querySelector('.unpay-button');
+        if (payBtn) payBtn.style.display = 'inline-block';
+        if (unpayBtn) unpayBtn.style.display = 'none';
+        
+        updateSummary();
+        await savePaymentStatus();
+    }
+
+    // Atualiza o resumo de parcelas
+    function updateSummary() {
+        const paidInstallments = document.querySelectorAll('.installment.paid');
+        const paidCount = paidInstallments.length;
+        const totalInstallments = document.querySelectorAll('.installment').length;
+        const pendingCount = totalInstallments - paidCount;
+        
+        let totalPaid = 0;
+        paidInstallments.forEach(el => {
+            totalPaid += parseFloat(el.dataset.value);
+        });
+        
+        document.getElementById('paidCount').textContent = paidCount;
+        document.getElementById('pendingCount').textContent = pendingCount;
+        document.getElementById('totalPaid').textContent = `R$ ${totalPaid.toFixed(2).replace('.', ',')}`;
+    }
+
+    // Modo admin com senha
+    document.getElementById('adminMode').addEventListener('change', function() {
+        if (this.checked) {
+            const senha = prompt('Digite a senha de administrador:');
+            
+            if (senha === 'MS-parcela-wevertton8x') {
+                const controls = document.querySelectorAll('.admin-controls');
+                controls.forEach(control => {
+                    control.classList.add('active');
+                });
+            } else {
+                alert('Senha incorreta! Acesso negado.');
+                this.checked = false;
+            }
+        } else {
+            const controls = document.querySelectorAll('.admin-controls');
+            controls.forEach(control => {
+                control.classList.remove('active');
+            });
+        }
+    });
+
+    // Quando a página carrega, busca o status na planilha
+    window.addEventListener('DOMContentLoaded', loadPaymentStatus);
+</script>
