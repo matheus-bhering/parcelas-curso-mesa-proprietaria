@@ -1,25 +1,154 @@
-import React, { useState } from 'react';
-import { Copy, Check, Sparkles, Edit3, ExternalLink, Mic } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Vendas - Sistema Comprovado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #000;
+        }
+        .tab-active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .tab-inactive {
+            background-color: #18181b;
+            color: #9ca3af;
+        }
+        .tab-inactive:hover {
+            background-color: #27272a;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-black p-6">
+    <div class="max-w-5xl mx-auto">
+        
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <div class="text-blue-500 text-xs font-bold tracking-widest mb-3">
+                SISTEMA COMPROVADO
+            </div>
+            <h1 class="text-4xl md:text-6xl font-black text-white mb-2">
+                SIMULADOR DE VENDAS
+            </h1>
+            <h1 class="text-4xl md:text-6xl font-black text-blue-500 mb-6">
+                QUE TRIPLICOU CONVERSÕES
+            </h1>
+            
+            <p class="text-gray-400 text-base mb-4 max-w-2xl mx-auto">
+                Treine seu time com IA simulando clientes reais. Avaliação automática de performance.
+            </p>
+            <div class="inline-block bg-blue-500/10 border border-blue-500/30 rounded-lg px-4 py-2">
+                <p class="text-blue-500 text-sm font-bold">
+                    ⚡ Resultados comprovados: até 3x mais conversão
+                </p>
+            </div>
+        </div>
 
-const App = () => {
-  const [activeTab, setActiveTab] = useState('copiar');
-  const [copied, setCopied] = useState(false);
-  const [copiedCustom, setCopiedCustom] = useState(false);
-  const [copiedInfo, setCopiedInfo] = useState(false);
-  
-  // Form states aba 1
-  const [negocio, setNegocio] = useState('');
-  const [produto1, setProduto1] = useState('');
-  const [beneficios, setBeneficios] = useState('');
-  const [diferenciais, setDiferenciais] = useState('');
-  const [objecoes, setObjecoes] = useState('');
-  
-  // Form states aba 2
-  const [metodo, setMetodo] = useState('');
-  const [nicho, setNicho] = useState('');
-  const [produto, setProduto] = useState('');
+        <!-- Tabs -->
+        <div class="flex gap-2 mb-8">
+            <button onclick="showTab('copiar')" id="tab-copiar" class="flex-1 py-4 px-6 rounded-lg font-bold transition-all tab-active">
+                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                COPIAR E ADAPTAR
+            </button>
+            <button onclick="showTab('personalizar')" id="tab-personalizar" class="flex-1 py-4 px-6 rounded-lg font-bold transition-all tab-inactive">
+                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                </svg>
+                PERSONALIZAR AGORA
+            </button>
+        </div>
 
-  const promptGenerico = `# SISTEMA DE SIMULAÇÃO DE VENDAS
+        <!-- Content Copiar -->
+        <div id="content-copiar">
+            <!-- Formulário de Informações -->
+            <div class="bg-zinc-900 rounded-xl p-6 mb-6">
+                <h3 class="text-white text-xl font-bold mb-3 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    1. Preencha as Informações do Seu Negócio
+                </h3>
+                <p class="text-gray-400 text-sm mb-6">
+                    Essas informações serão usadas pela IA para simular clientes do seu nicho
+                </p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-white text-sm font-bold mb-2 block">Tipo de Negócio</label>
+                        <input type="text" id="negocio" placeholder="Ex: E-commerce de roupas, Agência de marketing, Consultoria financeira..." class="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none">
+                    </div>
+                    
+                    <div>
+                        <label class="text-white text-sm font-bold mb-2 block">Produto/Serviço Principal</label>
+                        <input type="text" id="produto1" placeholder="Ex: Mentoria em vendas, Plataforma SaaS, Curso online..." class="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none">
+                    </div>
+                    
+                    <div>
+                        <label class="text-white text-sm font-bold mb-2 block">Principais Benefícios</label>
+                        <textarea id="beneficios" placeholder="Ex: Resultados em 30 dias, Suporte 24/7, Método comprovado..." rows="3" class="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="text-white text-sm font-bold mb-2 block">Diferenciais Competitivos</label>
+                        <textarea id="diferenciais" placeholder="Ex: Único no mercado com X, Tecnologia proprietária, 10 anos de experiência..." rows="3" class="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="text-white text-sm font-bold mb-2 block">Objeções Comuns</label>
+                        <textarea id="objecoes" placeholder="Ex: 'É muito caro', 'Não tenho tempo', 'Já tentei antes e não funcionou'..." rows="3" class="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none"></textarea>
+                    </div>
+                </div>
+
+                <div class="bg-black rounded-lg p-5 mt-6 mb-4 border border-zinc-800">
+                    <pre id="preview-info" class="text-gray-300 text-xs whitespace-pre-wrap font-mono leading-relaxed"># INFORMAÇÕES DO SEU NEGÓCIO
+
+Tipo de Negócio: [Preencha acima]
+
+Produto/Serviço: [Preencha acima]
+
+Principais Benefícios:
+[Preencha acima]
+
+Diferenciais Competitivos:
+[Preencha acima]
+
+Objeções Comuns:
+[Preencha acima]
+
+---
+INSTRUÇÕES: Cole estas informações junto com o prompt genérico na IA para que ela simule clientes do seu negócio específico.</pre>
+                </div>
+
+                <button onclick="copyInfo()" id="btn-copy-info" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-lg font-bold transition-all flex items-center justify-center gap-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    COPIAR INFORMAÇÕES DO NEGÓCIO
+                </button>
+            </div>
+
+            <!-- Prompt Genérico -->
+            <div class="bg-zinc-900 rounded-xl p-6 mb-6">
+                <h3 class="text-white text-xl font-bold mb-3 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    2. Copie o Prompt Base
+                </h3>
+                <p class="text-gray-400 text-sm mb-4">
+                    Cole este prompt + as informações do seu negócio na IA
+                </p>
+                <div class="bg-black rounded-lg p-5 mb-4 max-h-96 overflow-y-auto border border-zinc-800">
+                    <pre class="text-gray-300 text-xs whitespace-pre-wrap font-mono leading-relaxed" id="prompt-generico"># SISTEMA DE SIMULAÇÃO DE VENDAS
 
 Você é um simulador avançado de clientes potenciais. Sua função é:
 
@@ -120,32 +249,100 @@ PREÇO-SENSÍVEL: "Achei o investimento alto comparado com outras opções do me
 2. Defina o nível de dificuldade com /dificuldade [1-10]
 3. Inicie a simulação respondendo naturalmente
 4. Use /objecao para gerar objeções específicas
-5. Ao final, use /avaliar para gerar relatório completo`;
+5. Ao final, use /avaliar para gerar relatório completo</pre>
+                </div>
+                <button onclick="copyGenerico()" id="btn-copy-generico" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-lg font-bold transition-all flex items-center justify-center gap-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    COPIAR PROMPT BASE
+                </button>
+            </div>
 
-  const generateInfoNegocio = () => {
-    return `# INFORMAÇÕES DO SEU NEGÓCIO
+            <!-- Guia de uso -->
+            <div class="bg-zinc-900 rounded-xl p-6">
+                <h3 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                    3. Como Usar - Modo Voz Recomendado
+                </h3>
+                <div class="space-y-3 text-gray-300 text-sm">
+                    <div class="flex gap-3">
+                        <span class="text-blue-500 font-bold">1.</span>
+                        <p>Cole as <strong>Informações do Negócio</strong> + <strong>Prompt Base</strong> no ChatGPT ou Claude</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="text-blue-500 font-bold">2.</span>
+                        <p><strong class="text-blue-500">ATIVE O MODO VOZ</strong> da IA (ícone de microfone)</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="text-blue-500 font-bold">3.</span>
+                        <p>Digite: <code class="bg-black px-2 py-1 rounded text-blue-500">/perfil 1</code> (escolha de 1 a 5)</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="text-blue-500 font-bold">4.</span>
+                        <p>Digite: <code class="bg-black px-2 py-1 rounded text-blue-500">/dificuldade 7</code> (nível de 1 a 10)</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="text-blue-500 font-bold">5.</span>
+                        <p>Comece sua abordagem de vendas <strong>falando naturalmente</strong></p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="text-blue-500 font-bold">6.</span>
+                        <p>A IA vai responder por voz simulando o cliente</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="text-blue-500 font-bold">7.</span>
+                        <p>Ao final, digite: <code class="bg-black px-2 py-1 rounded text-blue-500">/avaliar</code> para receber feedback completo</p>
+                    </div>
+                </div>
+                <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mt-4">
+                    <p class="text-blue-500 text-sm">
+                        💡 <strong>Dica:</strong> O modo voz torna a simulação 10x mais realista. É como uma ligação de vendas real!
+                    </p>
+                </div>
+            </div>
+        </div>
 
-Tipo de Negócio: ${negocio || '[Preencha acima]'}
+        <!-- Content Personalizar -->
+        <div id="content-personalizar" style="display: none;">
+            <div class="bg-zinc-900 rounded-xl p-6 mb-6">
+                <h3 class="text-white text-xl font-bold mb-3 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                    </svg>
+                    Personalize Seu Prompt Agora
+                </h3>
+                <p class="text-gray-400 text-sm mb-6">
+                    Preencha os campos abaixo e gere seu prompt personalizado automaticamente
+                </p>
+                
+                <div class="space-y-4 mb-6">
+                    <div>
+                        <label class="text-white text-sm font-bold mb-2 block">Nome do Método/Produto</label>
+                        <input type="text" id="metodo" placeholder="Ex: Método SARI, Programa Alpha, Sistema X..." class="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none">
+                    </div>
+                    
+                    <div>
+                        <label class="text-white text-sm font-bold mb-2 block">Seu Nicho</label>
+                        <input type="text" id="nicho" placeholder="Ex: emagrecimento, vendas B2B, marketing digital..." class="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none">
+                    </div>
+                    
+                    <div>
+                        <label class="text-white text-sm font-bold mb-2 block">O que você vende</label>
+                        <input type="text" id="produto" placeholder="Ex: mentoria, curso online, consultoria..." class="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none">
+                    </div>
+                </div>
 
-Produto/Serviço: ${produto1 || '[Preencha acima]'}
+                <div class="bg-black rounded-lg p-5 mb-4 max-h-96 overflow-y-auto border border-zinc-800">
+                    <pre id="preview-custom" class="text-gray-300 text-xs whitespace-pre-wrap font-mono leading-relaxed"># SISTEMA DE SIMULAÇÃO DE VENDAS - [SEU MÉTODO/PRODUTO]
 
-Principais Benefícios:
-${beneficios || '[Preencha acima]'}
-
-Diferenciais Competitivos:
-${diferenciais || '[Preencha acima]'}
-
-Objeções Comuns:
-${objecoes || '[Preencha acima]'}
-
----
-INSTRUÇÕES: Cole estas informações junto com o prompt genérico na IA para que ela simule clientes do seu negócio específico.`;
-  };
-
-  const generateCustomPrompt = () => {
-    return `# SISTEMA DE SIMULAÇÃO DE VENDAS - ${metodo || '[SEU MÉTODO/PRODUTO]'}
-
-Você é um simulador avançado de clientes potenciais para ${produto || '[SEU PRODUTO/SERVIÇO]'} no nicho de ${nicho || '[SEU NICHO]'}. Sua função é:
+Você é um simulador avançado de clientes potenciais para [SEU PRODUTO/SERVIÇO] no nicho de [SEU NICHO]. Sua função é:
 
 1. Interpretar diferentes perfis de clientes
 2. Responder naturalmente às abordagens de venda
@@ -155,31 +352,31 @@ Você é um simulador avançado de clientes potenciais para ${produto || '[SEU P
 ## PERFIS DE CLIENTES DISPONÍVEIS:
 
 1. PERFIL CÉTICO
-- Já tentou várias soluções no mercado de ${nicho || '[SEU NICHO]'}
+- Já tentou várias soluções no mercado de [SEU NICHO]
 - Desconfia de "mais uma promessa"
-- Precisa de muito embasamento sobre ${produto || '[SEU PRODUTO]'}
+- Precisa de muito embasamento sobre [SEU PRODUTO]
 - Faz muitas perguntas técnicas
 
 2. PERFIL EMOCIONAL
-- Está frustrado com a situação atual em ${nicho || '[SEU NICHO]'}
+- Está frustrado com a situação atual em [SEU NICHO]
 - Problemas relacionados ao desafio
 - Busca acolhimento
 - Sensível ao falar sobre o assunto
 
 3. PERFIL OCUPADO
-- Executivo/empresário no nicho de ${nicho || '[SEU NICHO]'}
+- Executivo/empresário no nicho de [SEU NICHO]
 - Pouco tempo disponível
 - Preocupado com praticidade
 - Foco em resultados rápidos
 
 4. PERFIL PESQUISADOR
-- Compara ${metodo || '[SEU MÉTODO]'} com outras soluções
+- Compara [SEU MÉTODO] com outras soluções
 - Conhece termos técnicos do nicho
 - Precisa de dados e evidências
 - Faz muitas perguntas sobre diferenciais
 
 5. PERFIL PREÇO-SENSÍVEL
-- Muito focado no investimento em ${produto || '[SEU PRODUTO]'}
+- Muito focado no investimento em [SEU PRODUTO]
 - Compara preços constantemente
 - Precisa de muita justificativa de valor
 - Tenta negociar sempre
@@ -220,7 +417,7 @@ Ao final da simulação, gerar relatório com:
 
 1. Manter consistência com o perfil escolhido
 2. Reagir naturalmente às técnicas de venda
-3. Apresentar objeções realistas do nicho de ${nicho || '[SEU NICHO]'}
+3. Apresentar objeções realistas do nicho de [SEU NICHO]
 4. Nunca revelar que é uma IA simulando
 5. Manter o nível de dificuldade selecionado
 6. Fornecer feedback construtivo
@@ -228,15 +425,15 @@ Ao final da simulação, gerar relatório com:
 
 ## EXEMPLOS DE DIÁLOGOS:
 
-CÉTICO: "Já tentei várias coisas parecidas em ${nicho || '[SEU NICHO]'} e nenhuma funcionou. O que faz ${metodo || '[SEU MÉTODO]'} ser diferente?"
+CÉTICO: "Já tentei várias coisas parecidas em [SEU NICHO] e nenhuma funcionou. O que faz [SEU MÉTODO] ser diferente?"
 
-EMOCIONAL: "Estou cansado de me sentir assim com ${nicho || '[problema do nicho]'}, já tentei de tudo e nada funciona..."
+EMOCIONAL: "Estou cansado de me sentir assim com [problema do nicho], já tentei de tudo e nada funciona..."
 
-OCUPADO: "Não tenho tempo para algo complexo. Quanto tempo ${produto || '[SEU PRODUTO]'} exige?"
+OCUPADO: "Não tenho tempo para algo complexo. Quanto tempo [SEU PRODUTO] exige?"
 
-PESQUISADOR: "Li sobre outras alternativas para ${nicho || '[SEU NICHO]'}. Qual a diferença de ${metodo || '[SEU MÉTODO]'}?"
+PESQUISADOR: "Li sobre outras alternativas para [SEU NICHO]. Qual a diferença de [SEU MÉTODO]?"
 
-PREÇO-SENSÍVEL: "Achei o investimento em ${produto || '[SEU PRODUTO]'} alto comparado com outras opções do mercado..."
+PREÇO-SENSÍVEL: "Achei o investimento em [SEU PRODUTO] alto comparado com outras opções do mercado..."
 
 ## INSTRUÇÕES DE USO:
 
@@ -244,407 +441,67 @@ PREÇO-SENSÍVEL: "Achei o investimento em ${produto || '[SEU PRODUTO]'} alto co
 2. Defina o nível de dificuldade com /dificuldade [1-10]
 3. Inicie a simulação respondendo naturalmente
 4. Use /objecao para gerar objeções específicas
-5. Ao final, use /avaliar para gerar relatório completo`;
-  };
+5. Ao final, use /avaliar para gerar relatório completo</pre>
+                </div>
 
-  const handleCopyGenerico = () => {
-    navigator.clipboard.writeText(promptGenerico);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 3000);
-  };
-
-  const handleCopyInfo = () => {
-    navigator.clipboard.writeText(generateInfoNegocio());
-    setCopiedInfo(true);
-    setTimeout(() => setCopiedInfo(false), 3000);
-  };
-
-  const handleCopyCustom = () => {
-    navigator.clipboard.writeText(generateCustomPrompt());
-    setCopiedCustom(true);
-    setTimeout(() => setCopiedCustom(false), 3000);
-  };
-
-  return (
-    <div className="min-h-screen bg-black p-6">
-      <div className="max-w-5xl mx-auto">
-        
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="text-blue-500 text-xs font-bold tracking-widest mb-3">
-            SISTEMA COMPROVADO
-          </div>
-          <h1 className="text-4xl md:text-6xl font-black text-white mb-2">
-            SIMULADOR DE VENDAS
-          </h1>
-          <h1 className="text-4xl md:text-6xl font-black text-blue-500 mb-6">
-            QUE TRIPLICOU CONVERSÕES
-          </h1>
-          
-          <p className="text-gray-400 text-base mb-4 max-w-2xl mx-auto">
-            Treine seu time com IA simulando clientes reais. Avaliação automática de performance.
-          </p>
-          <div className="inline-block bg-blue-500/10 border border-blue-500/30 rounded-lg px-4 py-2">
-            <p className="text-blue-500 text-sm font-bold">
-              ⚡ Resultados comprovados: até 3x mais conversão
-            </p>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex gap-2 mb-8">
-          <button
-            onClick={() => setActiveTab('copiar')}
-            className={`flex-1 py-4 px-6 rounded-lg font-bold transition-all ${
-              activeTab === 'copiar'
-                ? 'bg-blue-500 text-white'
-                : 'bg-zinc-900 text-gray-400 hover:bg-zinc-800'
-            }`}
-          >
-            <Copy className="w-5 h-5 inline mr-2" />
-            COPIAR E ADAPTAR
-          </button>
-          <button
-            onClick={() => setActiveTab('personalizar')}
-            className={`flex-1 py-4 px-6 rounded-lg font-bold transition-all ${
-              activeTab === 'personalizar'
-                ? 'bg-blue-500 text-white'
-                : 'bg-zinc-900 text-gray-400 hover:bg-zinc-800'
-            }`}
-          >
-            <Sparkles className="w-5 h-5 inline mr-2" />
-            PERSONALIZAR AGORA
-          </button>
-        </div>
-
-        {/* Content */}
-        {activeTab === 'copiar' ? (
-          <div>
-            {/* Formulário de Informações */}
-            <div className="bg-zinc-900 rounded-xl p-6 mb-6">
-              <h3 className="text-white text-xl font-bold mb-3 flex items-center gap-2">
-                <Edit3 className="w-5 h-5 text-blue-500" />
-                1. Preencha as Informações do Seu Negócio
-              </h3>
-              <p className="text-gray-400 text-sm mb-6">
-                Essas informações serão usadas pela IA para simular clientes do seu nicho
-              </p>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="text-white text-sm font-bold mb-2 block">
-                    Tipo de Negócio
-                  </label>
-                  <input
-                    type="text"
-                    value={negocio}
-                    onChange={(e) => setNegocio(e.target.value)}
-                    placeholder="Ex: E-commerce de roupas, Agência de marketing, Consultoria financeira..."
-                    className="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-white text-sm font-bold mb-2 block">
-                    Produto/Serviço Principal
-                  </label>
-                  <input
-                    type="text"
-                    value={produto1}
-                    onChange={(e) => setProduto1(e.target.value)}
-                    placeholder="Ex: Mentoria em vendas, Plataforma SaaS, Curso online..."
-                    className="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-orange-500 focus:outline-none"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-white text-sm font-bold mb-2 block">
-                    Principais Benefícios
-                  </label>
-                  <textarea
-                    value={beneficios}
-                    onChange={(e) => setBeneficios(e.target.value)}
-                    placeholder="Ex: Resultados em 30 dias, Suporte 24/7, Método comprovado..."
-                    rows="3"
-                    className="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-orange-500 focus:outline-none"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-white text-sm font-bold mb-2 block">
-                    Diferenciais Competitivos
-                  </label>
-                  <textarea
-                    value={diferenciais}
-                    onChange={(e) => setDiferenciais(e.target.value)}
-                    placeholder="Ex: Único no mercado com X, Tecnologia proprietária, 10 anos de experiência..."
-                    rows="3"
-                    className="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-orange-500 focus:outline-none"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-white text-sm font-bold mb-2 block">
-                    Objeções Comuns
-                  </label>
-                  <textarea
-                    value={objecoes}
-                    onChange={(e) => setObjecoes(e.target.value)}
-                    placeholder="Ex: 'É muito caro', 'Não tenho tempo', 'Já tentei antes e não funcionou'..."
-                    rows="3"
-                    className="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-orange-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="bg-black rounded-lg p-5 mt-6 mb-4 border border-zinc-800">
-                <pre className="text-gray-300 text-xs whitespace-pre-wrap font-mono leading-relaxed">
-                  {generateInfoNegocio()}
-                </pre>
-              </div>
-
-              <button
-                onClick={handleCopyInfo}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-lg font-bold transition-all flex items-center justify-center gap-3"
-              >
-                {copiedInfo ? (
-                  <>
-                    <Check className="w-5 h-5" />
-                    INFORMAÇÕES COPIADAS!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-5 h-5" />
-                    COPIAR INFORMAÇÕES DO NEGÓCIO
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Prompt Genérico */}
-            <div className="bg-zinc-900 rounded-xl p-6 mb-6">
-              <h3 className="text-white text-xl font-bold mb-3 flex items-center gap-2">
-                <Copy className="w-5 h-5 text-blue-500" />
-                2. Copie o Prompt Base
-              </h3>
-              <p className="text-gray-400 text-sm mb-4">
-                Cole este prompt + as informações do seu negócio na IA
-              </p>
-              <div className="bg-black rounded-lg p-5 mb-4 max-h-96 overflow-y-auto border border-zinc-800">
-                <pre className="text-gray-300 text-xs whitespace-pre-wrap font-mono leading-relaxed">
-                  {promptGenerico}
-                </pre>
-              </div>
-              <button
-                onClick={handleCopyGenerico}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-lg font-bold transition-all flex items-center justify-center gap-3"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-5 h-5" />
-                    PROMPT COPIADO!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-5 h-5" />
-                    COPIAR PROMPT BASE
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Guia de uso */}
-            <div className="bg-zinc-900 rounded-xl p-6">
-              <h3 className="text-white text-lg font-bold mb-4 flex items-center gap-2">
-                <Mic className="w-5 h-5 text-blue-500" />
-                3. Como Usar - Modo Voz Recomendado
-              </h3>
-              <div className="space-y-3 text-gray-300 text-sm">
-                <div className="flex gap-3">
-                  <span className="text-blue-500 font-bold">1.</span>
-                  <p>Cole as <strong>Informações do Negócio</strong> + <strong>Prompt Base</strong> no ChatGPT ou Claude</p>
-                </div>
-                <div className="flex gap-3">
-                  <span className="text-blue-500 font-bold">2.</span>
-                  <p><strong className="text-blue-500">ATIVE O MODO VOZ</strong> da IA (ícone de microfone)</p>
-                </div>
-                <div className="flex gap-3">
-                  <span className="text-blue-500 font-bold">3.</span>
-                  <p>Digite: <code className="bg-black px-2 py-1 rounded text-blue-500">/perfil 1</code> (escolha de 1 a 5)</p>
-                </div>
-                <div className="flex gap-3">
-                  <span className="text-blue-500 font-bold">4.</span>
-                  <p>Digite: <code className="bg-black px-2 py-1 rounded text-blue-500">/dificuldade 7</code> (nível de 1 a 10)</p>
-                </div>
-                <div className="flex gap-3">
-                  <span className="text-blue-500 font-bold">5.</span>
-                  <p>Comece sua abordagem de vendas <strong>falando naturalmente</strong></p>
-                </div>
-                <div className="flex gap-3">
-                  <span className="text-blue-500 font-bold">6.</span>
-                  <p>A IA vai responder por voz simulando o cliente</p>
-                </div>
-                <div className="flex gap-3">
-                  <span className="text-blue-500 font-bold">7.</span>
-                  <p>Ao final, digite: <code className="bg-black px-2 py-1 rounded text-blue-500">/avaliar</code> para receber feedback completo</p>
-                </div>
-              </div>
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mt-4">
-                <p className="text-blue-500 text-sm">
-                  💡 <strong>Dica:</strong> O modo voz torna a simulação 10x mais realista. É como uma ligação de vendas real!
-                </p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div>
-            <div className="bg-zinc-900 rounded-xl p-6 mb-6">
-              <h3 className="text-white text-xl font-bold mb-3 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-blue-500" />
-                Personalize Seu Prompt Agora
-              </h3>
-              <p className="text-gray-400 text-sm mb-6">
-                Preencha os campos abaixo e gere seu prompt personalizado automaticamente
-              </p>
-              
-              <div className="space-y-4 mb-6">
-                <div>
-                  <label className="text-white text-sm font-bold mb-2 block">
-                    Nome do Método/Produto
-                  </label>
-                  <input
-                    type="text"
-                    value={metodo}
-                    onChange={(e) => setMetodo(e.target.value)}
-                    placeholder="Ex: Método SARI, Programa Alpha, Sistema X..."
-                    className="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-orange-500 focus:outline-none"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-white text-sm font-bold mb-2 block">
-                    Seu Nicho
-                  </label>
-                  <input
-                    type="text"
-                    value={nicho}
-                    onChange={(e) => setNicho(e.target.value)}
-                    placeholder="Ex: emagrecimento, vendas B2B, marketing digital..."
-                    className="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-orange-500 focus:outline-none"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-white text-sm font-bold mb-2 block">
-                    O que você vende
-                  </label>
-                  <input
-                    type="text"
-                    value={produto}
-                    onChange={(e) => setProduto(e.target.value)}
-                    placeholder="Ex: mentoria, curso online, consultoria..."
-                    className="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-orange-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="bg-black rounded-lg p-5 mb-4 max-h-96 overflow-y-auto border border-zinc-800">
-                <pre className="text-gray-300 text-xs whitespace-pre-wrap font-mono leading-relaxed">
-                  {generateCustomPrompt()}
-                </pre>
-              </div>
-
-              <button
-                onClick={handleCopyCustom}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-lg font-bold transition-all flex items-center justify-center gap-3"
-              >
-                {copiedCustom ? (
-                  <>
-                    <Check className="w-5 h-5" />
-                    COPIADO!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-5 h-5" />
+                <button onclick="copyCustom()" id="btn-copy-custom" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-lg font-bold transition-all flex items-center justify-center gap-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
                     COPIAR PROMPT PERSONALIZADO
-                  </>
-                )}
-              </button>
+                </button>
             </div>
 
-            {/* Guia de uso */}
-            <div className="bg-zinc-900 rounded-xl p-6">
-              <h3 className="text-white text-lg font-bold mb-4 flex items-center gap-2">
-                <Mic className="w-5 h-5 text-blue-500" />
-                Como Usar - Modo Voz Recomendado
-              </h3>
-              <div className="space-y-3 text-gray-300 text-sm">
-                <div className="flex gap-3">
-                  <span className="text-blue-500 font-bold">1.</span>
-                  <p>Preencha os 3 campos acima com os dados do seu negócio</p>
+            <!-- Guia de uso personalizar -->
+            <div class="bg-zinc-900 rounded-xl p-6">
+                <h3 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                    Como Usar - Modo Voz Recomendado
+                </h3>
+                <div class="space-y-3 text-gray-300 text-sm">
+                    <div class="flex gap-3">
+                        <span class="text-blue-500 font-bold">1.</span>
+                        <p>Preencha os 3 campos acima com os dados do seu negócio</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="text-blue-500 font-bold">2.</span>
+                        <p>Cole o prompt gerado no ChatGPT ou Claude</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="text-blue-500 font-bold">3.</span>
+                        <p><strong class="text-blue-500">ATIVE O MODO VOZ</strong> da IA (ícone de microfone)</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="text-blue-500 font-bold">4.</span>
+                        <p>Digite: <code class="bg-black px-2 py-1 rounded text-blue-500">/perfil 1</code> (escolha de 1 a 5)</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="text-blue-500 font-bold">5.</span>
+                        <p>Digite: <code class="bg-black px-2 py-1 rounded text-blue-500">/dificuldade 7</code> (nível de 1 a 10)</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="text-blue-500 font-bold">6.</span>
+                        <p>Comece sua abordagem de vendas <strong>falando naturalmente</strong></p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="text-blue-500 font-bold">7.</span>
+                        <p>A IA vai responder por voz simulando o cliente</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="text-blue-500 font-bold">8.</span>
+                        <p>Ao final, digite: <code class="bg-black px-2 py-1 rounded text-blue-500">/avaliar</code> para receber feedback</p>
+                    </div>
                 </div>
-                <div className="flex gap-3">
-                  <span className="text-blue-500 font-bold">2.</span>
-                  <p>Cole o prompt gerado no ChatGPT ou Claude</p>
+                <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mt-4">
+                    <p class="text-blue-500 text-sm">
+                        💡 <strong>Dica:</strong> O modo voz torna a simulação 10x mais realista. É como uma ligação de vendas real!
+                    </p>
                 </div>
-                <div className="flex gap-3">
-                  <span className="text-blue-500 font-bold">3.</span>
-                  <p><strong className="text-blue-500">ATIVE O MODO VOZ</strong> da IA (ícone de microfone)</p>
-                </div>
-                <div className="flex gap-3">
-                  <span className="text-blue-500 font-bold">4.</span>
-                  <p>Digite: <code className="bg-black px-2 py-1 rounded text-blue-500">/perfil 1</code> (escolha de 1 a 5)</p>
-                </div>
-                <div className="flex gap-3">
-                  <span className="text-blue-500 font-bold">5.</span>
-                  <p>Digite: <code className="bg-black px-2 py-1 rounded text-blue-500">/dificuldade 7</code> (nível de 1 a 10)</p>
-                </div>
-                <div className="flex gap-3">
-                  <span className="text-blue-500 font-bold">6.</span>
-                  <p>Comece sua abordagem de vendas <strong>falando naturalmente</strong></p>
-                </div>
-                <div className="flex gap-3">
-                  <span className="text-blue-500 font-bold">7.</span>
-                  <p>A IA vai responder por voz simulando o cliente</p>
-                </div>
-                <div className="flex gap-3">
-                  <span className="text-blue-500 font-bold">8.</span>
-                  <p>Ao final, digite: <code className="bg-black px-2 py-1 rounded text-blue-500">/avaliar</code> para receber feedback</p>
-                </div>
-              </div>
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mt-4">
-                <p className="text-blue-500 text-sm">
-                  💡 <strong>Dica:</strong> O modo voz torna a simulação 10x mais realista. É como uma ligação de vendas real!
-                </p>
-              </div>
             </div>
-          </div>
-        )}
-
-        {/* CTA */}
-        <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-8 text-center shadow-2xl shadow-blue-500/20 mt-12">
-          <div className="text-white/80 text-sm font-bold mb-3 tracking-wide">
-            ISSO É SÓ A PONTINHA DO ICEBERG
-          </div>
-          <h2 className="text-white text-3xl md:text-4xl font-black mb-4 leading-tight">
-            FORMAÇÃO DE ESPECIALISTAS EM VENDAS CONSULTIVAS
-          </h2>
-          <p className="text-white/80 text-base mb-6">
-            Garanta o seu lugar no Clube MQV
-          </p>
-          <a
-            href="https://pay.hub.la/LOmdRx3wcDlDUiU6QJKT"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 bg-black hover:bg-zinc-900 text-blue-500 px-8 py-4 rounded-lg font-bold text-lg transition-all shadow-lg"
-          >
-            CLIQUE AQUI PARA SABER MAIS
-            <ExternalLink className="w-5 h-5" />
-          </a>
         </div>
-      </div>
-    </div>
-  );
-};
-
-export default App;
