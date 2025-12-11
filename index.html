@@ -302,6 +302,12 @@
         .summary-item .value.pending {
             color: #ffc107;
         }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
         
         @media print {
             body {
@@ -324,236 +330,314 @@
         }
         
         @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
             .container {
                 padding: 20px;
+                border-radius: 8px;
             }
             
             .header {
                 flex-direction: column;
                 gap: 15px;
             }
+
+            .logo {
+                font-size: 16px;
+                padding: 12px 20px;
+            }
+
+            .title h1 {
+                font-size: 20px;
+            }
             
             .installment {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 10px;
+                padding: 12px;
             }
             
             .installment-number,
             .installment-value {
                 min-width: auto;
             }
+
+            .installment-details {
+                padding: 0;
+                width: 100%;
+            }
+
+            .installment-value {
+                text-align: left;
+                font-size: 16px;
+            }
+
+            .status-badge {
+                margin-left: 0;
+                margin-top: 5px;
+            }
+
+            .admin-controls {
+                margin-left: 0;
+                margin-top: 10px;
+                width: 100%;
+            }
+
+            .pay-button, .unpay-button {
+                width: 100%;
+                padding: 10px;
+            }
             
             .summary {
                 flex-direction: column;
                 gap: 15px;
+                padding: 15px;
+            }
+
+            .summary-item .value {
+                font-size: 20px;
+            }
+
+            .purchase-info {
+                padding: 15px;
+            }
+
+            .purchase-info h2 {
+                font-size: 16px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <div class="logo">
-                Acompanhamento de fatura
-            </div>
-            <label class="admin-toggle">
-                <span>Modo Admin</span>
-                <input type="checkbox" id="adminMode">
-            </label>
-        </div>
+        <div class="loading" id="loading">Carregando dados...</div>
         
-        <div class="title">
-            <h1>Wevertton Oliveira - Vencimento todo dia 10</h1>
-        </div>
-        
-        <div class="purchase-info">
-            <h2>Informações da Compra</h2>
-            <div class="purchase-item">
-                <strong>Produto:</strong> Mesa Proprietária Canario Capital Treinamentos Ltda<br>
-                <strong>Valor Total:</strong> R$ 676,64<br>
-                <strong>Parcelas:</strong> 8x de R$ 84,58
-            </div>
-            <div class="purchase-item" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
-                <strong>Produto:</strong> Upgrade Plataforma Profit Pro<br>
-                <strong>Valor Total:</strong> R$ 168,88<br>
-                <strong>Parcelas:</strong> Pagamento único na 1ª parcela
-            </div>
-        </div>
-        
-        <div class="summary">
-            <div class="summary-item">
-                <h3>Total de Parcelas</h3>
-                <div class="value">8</div>
-            </div>
-            <div class="summary-item">
-                <h3>Parcelas Pagas</h3>
-                <div class="value paid" id="paidCount">0</div>
-            </div>
-            <div class="summary-item">
-                <h3>Parcelas Pendentes</h3>
-                <div class="value pending" id="pendingCount">8</div>
-            </div>
-            <div class="summary-item">
-                <h3>Valor Total Pago</h3>
-                <div class="value paid" id="totalPaid">R$ 0,00</div>
-            </div>
-        </div>
-        
-        <div class="installments">
-            <h2>Cronograma de Parcelas</h2>
-            
-            <div class="installment first-installment" data-installment="1" data-value="253.46">
-                <div class="installment-number">1ª Parcela</div>
-                <div class="installment-details">
-                    <strong>Vencimento: 10/12/2025 (Dezembro)</strong><br>
-                    R$ 168,88 - Upgrade Plataforma Profit Pro<br>
-                    R$ 84,58 - Mesa Proprietária
+        <div id="content" style="display: none;">
+            <div class="header">
+                <div class="logo">
+                    Acompanhamento de fatura
                 </div>
-                <div class="installment-value">R$ 253,46</div>
-                <div class="status-badge">✓ PAGO</div>
-                <div class="admin-controls">
-                    <button class="pay-button" onclick="markAsPaid(1)">Marcar como Pago</button>
-                    <button class="unpay-button" onclick="markAsUnpaid(1)" style="display:none;">Desmarcar</button>
+                <label class="admin-toggle">
+                    <span>Modo Admin</span>
+                    <input type="checkbox" id="adminMode">
+                </label>
+            </div>
+            
+            <div class="title">
+                <h1>Wevertton Oliveira - Vencimento todo dia 10</h1>
+            </div>
+            
+            <div class="purchase-info">
+                <h2>Informações da Compra</h2>
+                <div class="purchase-item">
+                    <strong>Produto:</strong> Mesa Proprietária Canario Capital Treinamentos Ltda<br>
+                    <strong>Valor Total:</strong> R$ 676,64<br>
+                    <strong>Parcelas:</strong> 8x de R$ 84,58
+                </div>
+                <div class="purchase-item" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
+                    <strong>Produto:</strong> Upgrade Plataforma Profit Pro<br>
+                    <strong>Valor Total:</strong> R$ 168,88<br>
+                    <strong>Parcelas:</strong> Pagamento único na 1ª parcela
                 </div>
             </div>
             
-            <div class="installment" data-installment="2" data-value="84.58">
-                <div class="installment-number">2ª Parcela</div>
-                <div class="installment-details">
-                    <strong>Vencimento: 10/01/2026 (Janeiro)</strong><br>
-                    2ª parcela Mesa Proprietária
+            <div class="summary">
+                <div class="summary-item">
+                    <h3>Total de Parcelas</h3>
+                    <div class="value">8</div>
                 </div>
-                <div class="installment-value">R$ 84,58</div>
-                <div class="status-badge">✓ PAGO</div>
-                <div class="admin-controls">
-                    <button class="pay-button" onclick="markAsPaid(2)">Marcar como Pago</button>
-                    <button class="unpay-button" onclick="markAsUnpaid(2)" style="display:none;">Desmarcar</button>
+                <div class="summary-item">
+                    <h3>Parcelas Pagas</h3>
+                    <div class="value paid" id="paidCount">0</div>
                 </div>
-            </div>
-            
-            <div class="installment" data-installment="3" data-value="84.58">
-                <div class="installment-number">3ª Parcela</div>
-                <div class="installment-details">
-                    <strong>Vencimento: 10/02/2026 (Fevereiro)</strong><br>
-                    3ª parcela Mesa Proprietária
+                <div class="summary-item">
+                    <h3>Parcelas Pendentes</h3>
+                    <div class="value pending" id="pendingCount">8</div>
                 </div>
-                <div class="installment-value">R$ 84,58</div>
-                <div class="status-badge">✓ PAGO</div>
-                <div class="admin-controls">
-                    <button class="pay-button" onclick="markAsPaid(3)">Marcar como Pago</button>
-                    <button class="unpay-button" onclick="markAsUnpaid(3)" style="display:none;">Desmarcar</button>
+                <div class="summary-item">
+                    <h3>Valor Total Pago</h3>
+                    <div class="value paid" id="totalPaid">R$ 0,00</div>
                 </div>
             </div>
             
-            <div class="installment" data-installment="4" data-value="84.58">
-                <div class="installment-number">4ª Parcela</div>
-                <div class="installment-details">
-                    <strong>Vencimento: 10/03/2026 (Março)</strong><br>
-                    4ª parcela Mesa Proprietária
+            <div class="installments">
+                <h2>Cronograma de Parcelas</h2>
+                
+                <div class="installment first-installment" data-installment="1" data-value="253.46">
+                    <div class="installment-number">1ª Parcela</div>
+                    <div class="installment-details">
+                        <strong>Vencimento: 10/12/2025 (Dezembro)</strong><br>
+                        R$ 168,88 - Upgrade Plataforma Profit Pro<br>
+                        R$ 84,58 - Mesa Proprietária
+                    </div>
+                    <div class="installment-value">R$ 253,46</div>
+                    <div class="status-badge">✓ PAGO</div>
+                    <div class="admin-controls">
+                        <button class="pay-button" onclick="markAsPaid(1)">Marcar como Pago</button>
+                        <button class="unpay-button" onclick="markAsUnpaid(1)" style="display:none;">Desmarcar</button>
+                    </div>
                 </div>
-                <div class="installment-value">R$ 84,58</div>
-                <div class="status-badge">✓ PAGO</div>
-                <div class="admin-controls">
-                    <button class="pay-button" onclick="markAsPaid(4)">Marcar como Pago</button>
-                    <button class="unpay-button" onclick="markAsUnpaid(4)" style="display:none;">Desmarcar</button>
+                
+                <div class="installment" data-installment="2" data-value="84.58">
+                    <div class="installment-number">2ª Parcela</div>
+                    <div class="installment-details">
+                        <strong>Vencimento: 10/01/2026 (Janeiro)</strong><br>
+                        2ª parcela Mesa Proprietária
+                    </div>
+                    <div class="installment-value">R$ 84,58</div>
+                    <div class="status-badge">✓ PAGO</div>
+                    <div class="admin-controls">
+                        <button class="pay-button" onclick="markAsPaid(2)">Marcar como Pago</button>
+                        <button class="unpay-button" onclick="markAsUnpaid(2)" style="display:none;">Desmarcar</button>
+                    </div>
+                </div>
+                
+                <div class="installment" data-installment="3" data-value="84.58">
+                    <div class="installment-number">3ª Parcela</div>
+                    <div class="installment-details">
+                        <strong>Vencimento: 10/02/2026 (Fevereiro)</strong><br>
+                        3ª parcela Mesa Proprietária
+                    </div>
+                    <div class="installment-value">R$ 84,58</div>
+                    <div class="status-badge">✓ PAGO</div>
+                    <div class="admin-controls">
+                        <button class="pay-button" onclick="markAsPaid(3)">Marcar como Pago</button>
+                        <button class="unpay-button" onclick="markAsUnpaid(3)" style="display:none;">Desmarcar</button>
+                    </div>
+                </div>
+                
+                <div class="installment" data-installment="4" data-value="84.58">
+                    <div class="installment-number">4ª Parcela</div>
+                    <div class="installment-details">
+                        <strong>Vencimento: 10/03/2026 (Março)</strong><br>
+                        4ª parcela Mesa Proprietária
+                    </div>
+                    <div class="installment-value">R$ 84,58</div>
+                    <div class="status-badge">✓ PAGO</div>
+                    <div class="admin-controls">
+                        <button class="pay-button" onclick="markAsPaid(4)">Marcar como Pago</button>
+                        <button class="unpay-button" onclick="markAsUnpaid(4)" style="display:none;">Desmarcar</button>
+                    </div>
+                </div>
+                
+                <div class="installment" data-installment="5" data-value="84.58">
+                    <div class="installment-number">5ª Parcela</div>
+                    <div class="installment-details">
+                        <strong>Vencimento: 10/04/2026 (Abril)</strong><br>
+                        5ª parcela Mesa Proprietária
+                    </div>
+                    <div class="installment-value">R$ 84,58</div>
+                    <div class="status-badge">✓ PAGO</div>
+                    <div class="admin-controls">
+                        <button class="pay-button" onclick="markAsPaid(5)">Marcar como Pago</button>
+                        <button class="unpay-button" onclick="markAsUnpaid(5)" style="display:none;">Desmarcar</button>
+                    </div>
+                </div>
+                
+                <div class="installment" data-installment="6" data-value="84.58">
+                    <div class="installment-number">6ª Parcela</div>
+                    <div class="installment-details">
+                        <strong>Vencimento: 10/05/2026 (Maio)</strong><br>
+                        6ª parcela Mesa Proprietária
+                    </div>
+                    <div class="installment-value">R$ 84,58</div>
+                    <div class="status-badge">✓ PAGO</div>
+                    <div class="admin-controls">
+                        <button class="pay-button" onclick="markAsPaid(6)">Marcar como Pago</button>
+                        <button class="unpay-button" onclick="markAsUnpaid(6)" style="display:none;">Desmarcar</button>
+                    </div>
+                </div>
+                
+                <div class="installment" data-installment="7" data-value="84.58">
+                    <div class="installment-number">7ª Parcela</div>
+                    <div class="installment-details">
+                        <strong>Vencimento: 10/06/2026 (Junho)</strong><br>
+                        7ª parcela Mesa Proprietária
+                    </div>
+                    <div class="installment-value">R$ 84,58</div>
+                    <div class="status-badge">✓ PAGO</div>
+                    <div class="admin-controls">
+                        <button class="pay-button" onclick="markAsPaid(7)">Marcar como Pago</button>
+                        <button class="unpay-button" onclick="markAsUnpaid(7)" style="display:none;">Desmarcar</button>
+                    </div>
+                </div>
+                
+                <div class="installment" data-installment="8" data-value="84.58">
+                    <div class="installment-number">8ª Parcela</div>
+                    <div class="installment-details">
+                        <strong>Vencimento: 10/07/2026 (Julho)</strong><br>
+                        8ª parcela Mesa Proprietária
+                    </div>
+                    <div class="installment-value">R$ 84,58</div>
+                    <div class="status-badge">✓ PAGO</div>
+                    <div class="admin-controls">
+                        <button class="pay-button" onclick="markAsPaid(8)">Marcar como Pago</button>
+                        <button class="unpay-button" onclick="markAsUnpaid(8)" style="display:none;">Desmarcar</button>
+                    </div>
                 </div>
             </div>
             
-            <div class="installment" data-installment="5" data-value="84.58">
-                <div class="installment-number">5ª Parcela</div>
-                <div class="installment-details">
-                    <strong>Vencimento: 10/04/2026 (Abril)</strong><br>
-                    5ª parcela Mesa Proprietária
-                </div>
-                <div class="installment-value">R$ 84,58</div>
-                <div class="status-badge">✓ PAGO</div>
-                <div class="admin-controls">
-                    <button class="pay-button" onclick="markAsPaid(5)">Marcar como Pago</button>
-                    <button class="unpay-button" onclick="markAsUnpaid(5)" style="display:none;">Desmarcar</button>
-                </div>
+            <div class="observation">
+                <strong>Observação:</strong>
+                Apenas a primeira parcela inclui o valor do Upgrade da Plataforma Profit Pro (R$ 168,88). Da segunda até a oitava parcela, será cobrado apenas o valor da Mesa Proprietária (R$ 84,58). Todas as parcelas vencem no dia 10 de cada mês.
             </div>
-            
-            <div class="installment" data-installment="6" data-value="84.58">
-                <div class="installment-number">6ª Parcela</div>
-                <div class="installment-details">
-                    <strong>Vencimento: 10/05/2026 (Maio)</strong><br>
-                    6ª parcela Mesa Proprietária
-                </div>
-                <div class="installment-value">R$ 84,58</div>
-                <div class="status-badge">✓ PAGO</div>
-                <div class="admin-controls">
-                    <button class="pay-button" onclick="markAsPaid(6)">Marcar como Pago</button>
-                    <button class="unpay-button" onclick="markAsUnpaid(6)" style="display:none;">Desmarcar</button>
-                </div>
-            </div>
-            
-            <div class="installment" data-installment="7" data-value="84.58">
-                <div class="installment-number">7ª Parcela</div>
-                <div class="installment-details">
-                    <strong>Vencimento: 10/06/2026 (Junho)</strong><br>
-                    7ª parcela Mesa Proprietária
-                </div>
-                <div class="installment-value">R$ 84,58</div>
-                <div class="status-badge">✓ PAGO</div>
-                <div class="admin-controls">
-                    <button class="pay-button" onclick="markAsPaid(7)">Marcar como Pago</button>
-                    <button class="unpay-button" onclick="markAsUnpaid(7)" style="display:none;">Desmarcar</button>
-                </div>
-            </div>
-            
-            <div class="installment" data-installment="8" data-value="84.58">
-                <div class="installment-number">8ª Parcela</div>
-                <div class="installment-details">
-                    <strong>Vencimento: 10/07/2026 (Julho)</strong><br>
-                    8ª parcela Mesa Proprietária
-                </div>
-                <div class="installment-value">R$ 84,58</div>
-                <div class="status-badge">✓ PAGO</div>
-                <div class="admin-controls">
-                    <button class="pay-button" onclick="markAsPaid(8)">Marcar como Pago</button>
-                    <button class="unpay-button" onclick="markAsUnpaid(8)" style="display:none;">Desmarcar</button>
-                </div>
-            </div>
-        </div>
-        
-        <div class="observation">
-            <strong>Observação:</strong>
-            Apenas a primeira parcela inclui o valor do Upgrade da Plataforma Profit Pro (R$ 168,88). Da segunda até a oitava parcela, será cobrado apenas o valor da Mesa Proprietária (R$ 84,58). Todas as parcelas vencem no dia 10 de cada mês.
         </div>
     </div>
 
     <script>
-        // Carrega o estado das parcelas do localStorage
-        function loadPaymentStatus() {
-            const saved = localStorage.getItem('installmentStatus');
-            if (saved) {
-                const status = JSON.parse(saved);
-                status.forEach(installmentNum => {
-                    const element = document.querySelector(`[data-installment="${installmentNum}"]`);
-                    if (element) {
-                        element.classList.add('paid');
-                        const payBtn = element.querySelector('.pay-button');
-                        const unpayBtn = element.querySelector('.unpay-button');
-                        if (payBtn) payBtn.style.display = 'none';
-                        if (unpayBtn) unpayBtn.style.display = 'inline-block';
-                    }
-                });
+        const STORAGE_KEY = 'wevertton-installments';
+
+        // Carrega o estado das parcelas do armazenamento compartilhado
+        async function loadPaymentStatus() {
+            try {
+                const result = await window.storage.get(STORAGE_KEY, true);
+                
+                if (result && result.value) {
+                    const status = JSON.parse(result.value);
+                    status.forEach(installmentNum => {
+                        const element = document.querySelector(`[data-installment="${installmentNum}"]`);
+                        if (element) {
+                            element.classList.add('paid');
+                            const payBtn = element.querySelector('.pay-button');
+                            const unpayBtn = element.querySelector('.unpay-button');
+                            if (payBtn) payBtn.style.display = 'none';
+                            if (unpayBtn) unpayBtn.style.display = 'inline-block';
+                        }
+                    });
+                }
+                
+                updateSummary();
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+            } catch (error) {
+                console.log('Nenhum dado salvo ainda ou erro ao carregar:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
                 updateSummary();
             }
         }
 
-        // Salva o estado das parcelas no localStorage
-        function savePaymentStatus() {
-            const paidInstallments = [];
-            document.querySelectorAll('.installment.paid').forEach(el => {
-                paidInstallments.push(parseInt(el.dataset.installment));
-            });
-            localStorage.setItem('installmentStatus', JSON.stringify(paidInstallments));
+        // Salva o estado das parcelas no armazenamento compartilhado
+        async function savePaymentStatus() {
+            try {
+                const paidInstallments = [];
+                document.querySelectorAll('.installment.paid').forEach(el => {
+                    paidInstallments.push(parseInt(el.dataset.installment));
+                });
+                
+                await window.storage.set(STORAGE_KEY, JSON.stringify(paidInstallments), true);
+                console.log('Status salvo com sucesso!');
+            } catch (error) {
+                console.error('Erro ao salvar status:', error);
+                alert('Erro ao salvar o status. Tente novamente.');
+            }
         }
 
         // Marca uma parcela como paga
-        function markAsPaid(installmentNum) {
+        async function markAsPaid(installmentNum) {
             const element = document.querySelector(`[data-installment="${installmentNum}"]`);
             element.classList.add('paid');
             
@@ -562,12 +646,12 @@
             payBtn.style.display = 'none';
             unpayBtn.style.display = 'inline-block';
             
-            savePaymentStatus();
+            await savePaymentStatus();
             updateSummary();
         }
 
         // Desmarca uma parcela como paga
-        function markAsUnpaid(installmentNum) {
+        async function markAsUnpaid(installmentNum) {
             const element = document.querySelector(`[data-installment="${installmentNum}"]`);
             element.classList.remove('paid');
             
@@ -576,7 +660,7 @@
             payBtn.style.display = 'inline-block';
             unpayBtn.style.display = 'none';
             
-            savePaymentStatus();
+            await savePaymentStatus();
             updateSummary();
         }
 
@@ -599,23 +683,18 @@
         // Toggle do modo admin com senha
         document.getElementById('adminMode').addEventListener('change', function() {
             if (this.checked) {
-                // Solicita a senha
                 const senha = prompt('Digite a senha de administrador:');
                 
-                // Verifica se a senha está correta
                 if (senha === 'MS-parcela-wevertton8x') {
-                    // Ativa o modo admin
                     const controls = document.querySelectorAll('.admin-controls');
                     controls.forEach(control => {
                         control.classList.add('active');
                     });
                 } else {
-                    // Senha incorreta - desmarca o checkbox
                     alert('Senha incorreta! Acesso negado.');
                     this.checked = false;
                 }
             } else {
-                // Desativa o modo admin
                 const controls = document.querySelectorAll('.admin-controls');
                 controls.forEach(control => {
                     control.classList.remove('active');
@@ -628,5 +707,3 @@
     </script>
 </body>
 </html>
-
-
