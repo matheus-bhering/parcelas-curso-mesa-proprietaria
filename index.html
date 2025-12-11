@@ -1,134 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Parcelas - Weverttom</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .summary {
+            background: #eef;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .installment {
+            padding: 15px;
+            background: #fafafa;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #ddd;
+        }
+
+        .installment.paid {
+            background: #d4ffd4;
+            border-color: #28a745;
+        }
+
+        .installment .value {
+            font-weight: bold;
+        }
+
+        .admin-controls {
+            display: none;
+        }
+
+        .admin-controls.active {
+            display: inline-block;
+        }
+
+        button {
+            padding: 6px 10px;
+            border: none;
+            background: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button.unpay-button {
+            background: #dc3545;
+            display: none;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Parcelas do Curso - Weverttom</h2>
+
+    <label>
+        <input type="checkbox" id="adminMode">
+        Modo Administrador
+    </label>
+
+    <div class="summary">
+        <p><b>Pagas:</b> <span id="paidCount">0</span></p>
+        <p><b>Pendentes:</b> <span id="pendingCount">0</span></p>
+        <p><b>Total Pago:</b> <span id="totalPaid">R$ 0,00</span></p>
+    </div>
+
+    <!-- LISTA DE PARCELAS -->
+    <div class="installment" data-installment="1" data-value="97.00">
+        <span>Parcela 1</span>
+        <span class="value">R$ 97,00</span>
+        <div class="admin-controls">
+            <button class="pay-button" onclick="markAsPaid(1)">Marcar Pago</button>
+            <button class="unpay-button" onclick="markAsUnpaid(1)">Desmarcar</button>
+        </div>
+    </div>
+
+    <div class="installment" data-installment="2" data-value="97.00">
+        <span>Parcela 2</span>
+        <span class="value">R$ 97,00</span>
+        <div class="admin-controls">
+            <button class="pay-button" onclick="markAsPaid(2)">Marcar Pago</button>
+            <button class="unpay-button" onclick="markAsUnpaid(2)">Desmarcar</button>
+        </div>
+    </div>
+
+    <div class="installment" data-installment="3" data-value="97.00">
+        <span>Parcela 3</span>
+        <span class="value">R$ 97,00</span>
+        <div class="admin-controls">
+            <button class="pay-button" onclick="markAsPaid(3)">Marcar Pago</button>
+            <button class="unpay-button" onclick="markAsUnpaid(3)">Desmarcar</button>
+        </div>
+    </div>
+
+    <div class="installment" data-installment="4" data-value="97.00">
+        <span>Parcela 4</span>
+        <span class="value">R$ 97,00</span>
+        <div class="admin-controls">
+            <button class="pay-button" onclick="markAsPaid(4)">Marcar Pago</button>
+            <button class="unpay-button" onclick="markAsUnpaid(4)">Desmarcar</button>
+        </div>
+    </div>
+
+    <div class="installment" data-installment="5" data-value="97.00">
+        <span>Parcela 5</span>
+        <span class="value">R$ 97,00</span>
+        <div class="admin-controls">
+            <button class="pay-button" onclick="markAsPaid(5)">Marcar Pago</button>
+            <button class="unpay-button" onclick="markAsUnpaid(5)">Desmarcar</button>
+        </div>
+    </div>
+
+    <div class="installment" data-installment="6" data-value="97.00">
+        <span>Parcela 6</span>
+        <span class="value">R$ 97,00</span>
+        <div class="admin-controls">
+            <button class="pay-button" onclick="markAsPaid(6)">Marcar Pago</button>
+            <button class="unpay-button" onclick="markAsUnpaid(6)">Desmarcar</button>
+        </div>
+    </div>
+
+    <div class="installment" data-installment="7" data-value="97.00">
+        <span>Parcela 7</span>
+        <span class="value">R$ 97,00</span>
+        <div class="admin-controls">
+            <button class="pay-button" onclick="markAsPaid(7)">Marcar Pago</button>
+            <button class="unpay-button" onclick="markAsUnpaid(7)">Desmarcar</button>
+        </div>
+    </div>
+
+    <div class="installment" data-installment="8" data-value="97.00">
+        <span>Parcela 8</span>
+        <span class="value">R$ 97,00</span>
+        <div class="admin-controls">
+            <button class="pay-button" onclick="markAsPaid(8)">Marcar Pago</button>
+            <button class="unpay-button" onclick="markAsUnpaid(8)">Desmarcar</button>
+        </div>
+    </div>
+
+</div>
+
+<!-- SCRIPT FINAL (SINCRONIZA COM A PLANILHA) -->
 <script>
-    const API_URL   = 'https://script.google.com/macros/s/AKfycbzaSRjrP1bfjWgqiiWrOECu169sxqOoGAKRVRGZcSqW5pRwk461eDSxCfvsgKCTQFzi/exec';
-    const API_TOKEN = 'JkiZwfLFSO3MbBNWdCJOhJHgtgI0EJUFZOifVcU9sXbHoGFhrb0nopePh8jRwJF7';
 
-    // Carrega o estado das parcelas da planilha (via Apps Script)
-    async function loadPaymentStatus() {
-        try {
-            const res = await fetch(`${API_URL}?token=${API_TOKEN}`, {
-                method: 'GET'
-            });
+const API_URL = "https://script.google.com/macros/s/AKfycbzaSRjrP1bfjWgqiiWrOECu169sxqOoGAKRVRGZcSqW5pRwk461eDSxCfvsgKCTQFzi/exec";
+const API_TOKEN = "JkiZwfLFSO3MbBNWdCJOhJHgtgI0EJUFZOifVcU9sXbHoGFhrb0nopePh8jRwJF7";
 
-            if (!res.ok) {
-                console.error('Erro ao carregar status das parcelas');
-                return;
-            }
+async function loadPaymentStatus() {
+    try {
+        const res = await fetch(`${API_URL}?token=${API_TOKEN}`);
+        const data = await res.json();
+        const status = data.paidInstallments || [];
 
-            const data = await res.json();
-            const status = data.paidInstallments || [];
+        status.forEach(num => {
+            const el = document.querySelector(`[data-installment="${num}"]`);
+            if (!el) return;
 
-            status.forEach(installmentNum => {
-                const element = document.querySelector(`[data-installment="${installmentNum}"]`);
-                if (element) {
-                    element.classList.add('paid');
-                    const payBtn = element.querySelector('.pay-button');
-                    const unpayBtn = element.querySelector('.unpay-button');
-                    if (payBtn) payBtn.style.display = 'none';
-                    if (unpayBtn) unpayBtn.style.display = 'inline-block';
-                }
-            });
-
-            updateSummary();
-        } catch (err) {
-            console.error('Erro na requisição de loadPaymentStatus:', err);
-        }
-    }
-
-    // Salva o estado atual das parcelas na planilha (via Apps Script)
-    async function savePaymentStatus() {
-        const paidInstallments = [];
-        document.querySelectorAll('.installment.paid').forEach(el => {
-            paidInstallments.push(parseInt(el.dataset.installment));
+            el.classList.add("paid");
+            el.querySelector(".pay-button").style.display = "none";
+            el.querySelector(".unpay-button").style.display = "inline-block";
         });
 
-        try {
-            const res = await fetch(`${API_URL}?token=${API_TOKEN}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ paidInstallments })
-            });
-
-            if (!res.ok) {
-                console.error('Erro ao salvar status das parcelas');
-            }
-        } catch (err) {
-            console.error('Erro na requisição de savePaymentStatus:', err);
-        }
-    }
-
-    // Marca uma parcela como paga (usado nos onclick do HTML)
-    async function markAsPaid(installmentNum) {
-        const element = document.querySelector(`[data-installment="${installmentNum}"]`);
-        if (!element) return;
-
-        element.classList.add('paid');
-        
-        const payBtn = element.querySelector('.pay-button');
-        const unpayBtn = element.querySelector('.unpay-button');
-        if (payBtn) payBtn.style.display = 'none';
-        if (unpayBtn) unpayBtn.style.display = 'inline-block';
-        
         updateSummary();
-        await savePaymentStatus();
+
+    } catch (err) {
+        console.error("Erro ao carregar:", err);
     }
+}
 
-    // Desmarca uma parcela como paga (usado nos onclick do HTML)
-    async function markAsUnpaid(installmentNum) {
-        const element = document.querySelector(`[data-installment="${installmentNum}"]`);
-        if (!element) return;
+async function savePaymentStatus() {
+    const paid = [...document.querySelectorAll(".installment.paid")]
+        .map(el => parseInt(el.dataset.installment));
 
-        element.classList.remove('paid');
-        
-        const payBtn = element.querySelector('.pay-button');
-        const unpayBtn = element.querySelector('.unpay-button');
-        if (payBtn) payBtn.style.display = 'inline-block';
-        if (unpayBtn) unpayBtn.style.display = 'none';
-        
-        updateSummary();
-        await savePaymentStatus();
-    }
+    await fetch(`${API_URL}?token=${API_TOKEN}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paidInstallments: paid })
+    });
+}
 
-    // Atualiza o resumo de parcelas
-    function updateSummary() {
-        const paidInstallments = document.querySelectorAll('.installment.paid');
-        const paidCount = paidInstallments.length;
-        const totalInstallments = document.querySelectorAll('.installment').length;
-        const pendingCount = totalInstallments - paidCount;
-        
-        let totalPaid = 0;
-        paidInstallments.forEach(el => {
-            totalPaid += parseFloat(el.dataset.value);
-        });
-        
-        document.getElementById('paidCount').textContent = paidCount;
-        document.getElementById('pendingCount').textContent = pendingCount;
-        document.getElementById('totalPaid').textContent = `R$ ${totalPaid.toFixed(2).replace('.', ',')}`;
-    }
+async function markAsPaid(n) {
+    const el = document.querySelector(`[data-installment="${n}"]`);
+    el.classList.add("paid");
+    el.querySelector(".pay-button").style.display = "none";
+    el.querySelector(".unpay-button").style.display = "inline-block";
 
-    // Modo admin com senha
-    document.getElementById('adminMode').addEventListener('change', function() {
-        if (this.checked) {
-            const senha = prompt('Digite a senha de administrador:');
-            
-            if (senha === 'MS-parcela-wevertton8x') {
-                const controls = document.querySelectorAll('.admin-controls');
-                controls.forEach(control => {
-                    control.classList.add('active');
-                });
-            } else {
-                alert('Senha incorreta! Acesso negado.');
-                this.checked = false;
-            }
-        } else {
-            const controls = document.querySelectorAll('.admin-controls');
-            controls.forEach(control => {
-                control.classList.remove('active');
-            });
-        }
+    updateSummary();
+    await savePaymentStatus();
+}
+
+async function markAsUnpaid(n) {
+    const el = document.querySelector(`[data-installment="${n}"]`);
+    el.classList.remove("paid");
+    el.querySelector(".pay-button").style.display = "inline-block";
+    el.querySelector(".unpay-button").style.display = "none";
+
+    updateSummary();
+    await savePaymentStatus();
+}
+
+function updateSummary() {
+    const total = document.querySelectorAll(".installment").length;
+    const paid = document.querySelectorAll(".installment.paid").length;
+    const pending = total - paid;
+
+    let sum = 0;
+    document.querySelectorAll(".installment.paid").forEach(el => {
+        sum += parseFloat(el.dataset.value);
     });
 
-    // Quando a página carrega, busca o status na planilha
-    window.addEventListener('DOMContentLoaded', loadPaymentStatus);
+    document.getElementById("paidCount").textContent = paid;
+    document.getElementById("pendingCount").textContent = pending;
+    document.getElementById("totalPaid").textContent = 
+        "R$ " + sum.toFixed(2).replace(".", ",");
+}
+
+// Ativa modo admin
+document.getElementById("adminMode").addEventListener("change", function () {
+    if (this.checked) {
+        const senha = prompt("Digite a senha do administrador:");
+        if (senha === "MS-parcela-wevertton8x") {
+            document.querySelectorAll(".admin-controls")
+                .forEach(c => c.classList.add("active"));
+        } else {
+            alert("Senha incorreta!");
+            this.checked = false;
+        }
+    } else {
+        document.querySelectorAll(".admin-controls")
+            .forEach(c => c.classList.remove("active"));
+    }
+});
+
+window.onload = loadPaymentStatus;
+
 </script>
+
+</body>
+</html>
