@@ -3,505 +3,630 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Vendas - Sistema Comprovado</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Documento de Parcelamento</title>
     <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            background-color: #000;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            color: #333;
         }
-        .tab-active {
-            background-color: #3b82f6;
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #FFDF00;
+        }
+        
+        .logo {
+            width: auto;
+            padding: 15px 25px;
+            background: #FFDF00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: #005AA0;
+            border-radius: 4px;
+        }
+        
+        .admin-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+        
+        .admin-toggle:hover {
+            background: #e0e0e0;
+        }
+        
+        .admin-toggle input[type="checkbox"] {
+            width: 40px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .title {
+            margin-bottom: 30px;
+        }
+        
+        .title h1 {
+            font-size: 24px;
+            color: #005AA0;
+            margin-bottom: 10px;
+        }
+        
+        .purchase-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #005AA0;
+        }
+        
+        .purchase-info h2 {
+            font-size: 18px;
+            color: #005AA0;
+            margin-bottom: 15px;
+        }
+        
+        .purchase-item {
+            margin-bottom: 10px;
+            padding: 8px 0;
+            line-height: 1.6;
+        }
+        
+        .installments {
+            margin-top: 30px;
+        }
+        
+        .installments h2 {
+            font-size: 20px;
+            color: #005AA0;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #FFDF00;
+        }
+        
+        .installment {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .installment::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 6px;
+            background: #ddd;
+            transition: all 0.3s;
+        }
+        
+        .installment:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .installment.paid {
+            background: linear-gradient(135deg, #d4edda 0%, #f1f9f3 100%);
+            border-color: #28a745;
+        }
+        
+        .installment.paid::before {
+            background: #28a745;
+        }
+        
+        .installment-number {
+            font-weight: bold;
+            color: #005AA0;
+            font-size: 16px;
+            min-width: 100px;
+        }
+        
+        .installment.paid .installment-number {
+            color: #28a745;
+        }
+        
+        .installment-details {
+            flex: 1;
+            padding: 0 15px;
+        }
+        
+        .installment-value {
+            font-weight: bold;
+            color: #666;
+            font-size: 18px;
+            min-width: 120px;
+            text-align: right;
+        }
+        
+        .installment.paid .installment-value {
+            color: #28a745;
+        }
+        
+        .first-installment {
+            border: 2px solid #005AA0;
+        }
+        
+        .first-installment::before {
+            background: #005AA0;
+        }
+        
+        .first-installment.paid {
+            border-color: #28a745;
+        }
+        
+        .status-badge {
+            display: none;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            background: #28a745;
             color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
         }
-        .tab-inactive {
-            background-color: #18181b;
-            color: #9ca3af;
+        
+        .installment.paid .status-badge {
+            display: flex;
         }
-        .tab-inactive:hover {
-            background-color: #27272a;
+        
+        .admin-controls {
+            display: none;
+            margin-left: 15px;
+        }
+        
+        .admin-controls.active {
+            display: block;
+        }
+        
+        .pay-button {
+            padding: 8px 16px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .pay-button:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+        }
+        
+        .unpay-button {
+            padding: 8px 16px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .unpay-button:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+        }
+        
+        .observation {
+            margin-top: 30px;
+            padding: 15px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+        }
+        
+        .observation strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #856404;
+        }
+        
+        .summary {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f5f5f5 100%);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        
+        .summary-item {
+            flex: 1;
+        }
+        
+        .summary-item h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .summary-item .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #005AA0;
+        }
+        
+        .summary-item .value.paid {
+            color: #28a745;
+        }
+        
+        .summary-item .value.pending {
+            color: #ffc107;
+        }
+        
+        @media print {
+            body {
+                padding: 20px;
+                background: white;
+            }
+            
+            .container {
+                box-shadow: none;
+            }
+            
+            .admin-toggle,
+            .admin-controls {
+                display: none !important;
+            }
+            
+            .installment:hover {
+                box-shadow: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .installment {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .installment-number,
+            .installment-value {
+                min-width: auto;
+            }
+            
+            .summary {
+                flex-direction: column;
+                gap: 15px;
+            }
         }
     </style>
 </head>
-<body class="min-h-screen bg-black p-6">
-    <div class="max-w-5xl mx-auto">
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                Acompanhamento de fatura
+            </div>
+            <label class="admin-toggle">
+                <span>Modo Admin</span>
+                <input type="checkbox" id="adminMode">
+            </label>
+        </div>
         
-        <!-- Header -->
-        <div class="text-center mb-12">
-            <div class="text-blue-500 text-xs font-bold tracking-widest mb-3">
-                SISTEMA COMPROVADO
+        <div class="title">
+            <h1>Wevertton Oliveira - Vencimento todo dia 10</h1>
+        </div>
+        
+        <div class="purchase-info">
+            <h2>Informações da Compra</h2>
+            <div class="purchase-item">
+                <strong>Produto:</strong> Mesa Proprietária Canario Capital Treinamentos Ltda<br>
+                <strong>Valor Total:</strong> R$ 676,64<br>
+                <strong>Parcelas:</strong> 8x de R$ 84,58
             </div>
-            <h1 class="text-4xl md:text-6xl font-black text-white mb-2">
-                SIMULADOR DE VENDAS
-            </h1>
-            <h1 class="text-4xl md:text-6xl font-black text-blue-500 mb-6">
-                QUE TRIPLICOU CONVERSÕES
-            </h1>
+            <div class="purchase-item" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
+                <strong>Produto:</strong> Upgrade Plataforma Profit Pro<br>
+                <strong>Valor Total:</strong> R$ 168,88<br>
+                <strong>Parcelas:</strong> Pagamento único na 1ª parcela
+            </div>
+        </div>
+        
+        <div class="summary">
+            <div class="summary-item">
+                <h3>Total de Parcelas</h3>
+                <div class="value">8</div>
+            </div>
+            <div class="summary-item">
+                <h3>Parcelas Pagas</h3>
+                <div class="value paid" id="paidCount">0</div>
+            </div>
+            <div class="summary-item">
+                <h3>Parcelas Pendentes</h3>
+                <div class="value pending" id="pendingCount">8</div>
+            </div>
+            <div class="summary-item">
+                <h3>Valor Total Pago</h3>
+                <div class="value paid" id="totalPaid">R$ 0,00</div>
+            </div>
+        </div>
+        
+        <div class="installments">
+            <h2>Cronograma de Parcelas</h2>
             
-            <p class="text-gray-400 text-base mb-4 max-w-2xl mx-auto">
-                Treine seu time com IA simulando clientes reais. Avaliação automática de performance.
-            </p>
-            <div class="inline-block bg-blue-500/10 border border-blue-500/30 rounded-lg px-4 py-2">
-                <p class="text-blue-500 text-sm font-bold">
-                    ⚡ Resultados comprovados: até 3x mais conversão
-                </p>
+            <div class="installment first-installment" data-installment="1" data-value="253.46">
+                <div class="installment-number">1ª Parcela</div>
+                <div class="installment-details">
+                    <strong>Vencimento: 10/12/2025 (Dezembro)</strong><br>
+                    R$ 168,88 - Upgrade Plataforma Profit Pro<br>
+                    R$ 84,58 - Mesa Proprietária
+                </div>
+                <div class="installment-value">R$ 253,46</div>
+                <div class="status-badge">✓ PAGO</div>
+                <div class="admin-controls">
+                    <button class="pay-button" onclick="markAsPaid(1)">Marcar como Pago</button>
+                    <button class="unpay-button" onclick="markAsUnpaid(1)" style="display:none;">Desmarcar</button>
+                </div>
+            </div>
+            
+            <div class="installment" data-installment="2" data-value="84.58">
+                <div class="installment-number">2ª Parcela</div>
+                <div class="installment-details">
+                    <strong>Vencimento: 10/01/2026 (Janeiro)</strong><br>
+                    2ª parcela Mesa Proprietária
+                </div>
+                <div class="installment-value">R$ 84,58</div>
+                <div class="status-badge">✓ PAGO</div>
+                <div class="admin-controls">
+                    <button class="pay-button" onclick="markAsPaid(2)">Marcar como Pago</button>
+                    <button class="unpay-button" onclick="markAsUnpaid(2)" style="display:none;">Desmarcar</button>
+                </div>
+            </div>
+            
+            <div class="installment" data-installment="3" data-value="84.58">
+                <div class="installment-number">3ª Parcela</div>
+                <div class="installment-details">
+                    <strong>Vencimento: 10/02/2026 (Fevereiro)</strong><br>
+                    3ª parcela Mesa Proprietária
+                </div>
+                <div class="installment-value">R$ 84,58</div>
+                <div class="status-badge">✓ PAGO</div>
+                <div class="admin-controls">
+                    <button class="pay-button" onclick="markAsPaid(3)">Marcar como Pago</button>
+                    <button class="unpay-button" onclick="markAsUnpaid(3)" style="display:none;">Desmarcar</button>
+                </div>
+            </div>
+            
+            <div class="installment" data-installment="4" data-value="84.58">
+                <div class="installment-number">4ª Parcela</div>
+                <div class="installment-details">
+                    <strong>Vencimento: 10/03/2026 (Março)</strong><br>
+                    4ª parcela Mesa Proprietária
+                </div>
+                <div class="installment-value">R$ 84,58</div>
+                <div class="status-badge">✓ PAGO</div>
+                <div class="admin-controls">
+                    <button class="pay-button" onclick="markAsPaid(4)">Marcar como Pago</button>
+                    <button class="unpay-button" onclick="markAsUnpaid(4)" style="display:none;">Desmarcar</button>
+                </div>
+            </div>
+            
+            <div class="installment" data-installment="5" data-value="84.58">
+                <div class="installment-number">5ª Parcela</div>
+                <div class="installment-details">
+                    <strong>Vencimento: 10/04/2026 (Abril)</strong><br>
+                    5ª parcela Mesa Proprietária
+                </div>
+                <div class="installment-value">R$ 84,58</div>
+                <div class="status-badge">✓ PAGO</div>
+                <div class="admin-controls">
+                    <button class="pay-button" onclick="markAsPaid(5)">Marcar como Pago</button>
+                    <button class="unpay-button" onclick="markAsUnpaid(5)" style="display:none;">Desmarcar</button>
+                </div>
+            </div>
+            
+            <div class="installment" data-installment="6" data-value="84.58">
+                <div class="installment-number">6ª Parcela</div>
+                <div class="installment-details">
+                    <strong>Vencimento: 10/05/2026 (Maio)</strong><br>
+                    6ª parcela Mesa Proprietária
+                </div>
+                <div class="installment-value">R$ 84,58</div>
+                <div class="status-badge">✓ PAGO</div>
+                <div class="admin-controls">
+                    <button class="pay-button" onclick="markAsPaid(6)">Marcar como Pago</button>
+                    <button class="unpay-button" onclick="markAsUnpaid(6)" style="display:none;">Desmarcar</button>
+                </div>
+            </div>
+            
+            <div class="installment" data-installment="7" data-value="84.58">
+                <div class="installment-number">7ª Parcela</div>
+                <div class="installment-details">
+                    <strong>Vencimento: 10/06/2026 (Junho)</strong><br>
+                    7ª parcela Mesa Proprietária
+                </div>
+                <div class="installment-value">R$ 84,58</div>
+                <div class="status-badge">✓ PAGO</div>
+                <div class="admin-controls">
+                    <button class="pay-button" onclick="markAsPaid(7)">Marcar como Pago</button>
+                    <button class="unpay-button" onclick="markAsUnpaid(7)" style="display:none;">Desmarcar</button>
+                </div>
+            </div>
+            
+            <div class="installment" data-installment="8" data-value="84.58">
+                <div class="installment-number">8ª Parcela</div>
+                <div class="installment-details">
+                    <strong>Vencimento: 10/07/2026 (Julho)</strong><br>
+                    8ª parcela Mesa Proprietária
+                </div>
+                <div class="installment-value">R$ 84,58</div>
+                <div class="status-badge">✓ PAGO</div>
+                <div class="admin-controls">
+                    <button class="pay-button" onclick="markAsPaid(8)">Marcar como Pago</button>
+                    <button class="unpay-button" onclick="markAsUnpaid(8)" style="display:none;">Desmarcar</button>
+                </div>
             </div>
         </div>
-
-        <!-- Tabs -->
-        <div class="flex gap-2 mb-8">
-            <button onclick="showTab('copiar')" id="tab-copiar" class="flex-1 py-4 px-6 rounded-lg font-bold transition-all tab-active">
-                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-                COPIAR E ADAPTAR
-            </button>
-            <button onclick="showTab('personalizar')" id="tab-personalizar" class="flex-1 py-4 px-6 rounded-lg font-bold transition-all tab-inactive">
-                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                </svg>
-                PERSONALIZAR AGORA
-            </button>
+        
+        <div class="observation">
+            <strong>Observação:</strong>
+            Apenas a primeira parcela inclui o valor do Upgrade da Plataforma Profit Pro (R$ 168,88). Da segunda até a oitava parcela, será cobrado apenas o valor da Mesa Proprietária (R$ 84,58). Todas as parcelas vencem no dia 10 de cada mês.
         </div>
+    </div>
 
-        <!-- Content Copiar -->
-        <div id="content-copiar">
-            <!-- Formulário de Informações -->
-            <div class="bg-zinc-900 rounded-xl p-6 mb-6">
-                <h3 class="text-white text-xl font-bold mb-3 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                    </svg>
-                    1. Preencha as Informações do Seu Negócio
-                </h3>
-                <p class="text-gray-400 text-sm mb-6">
-                    Essas informações serão usadas pela IA para simular clientes do seu nicho
-                </p>
+    <script>
+        // Carrega o estado das parcelas do localStorage
+        function loadPaymentStatus() {
+            const saved = localStorage.getItem('installmentStatus');
+            if (saved) {
+                const status = JSON.parse(saved);
+                status.forEach(installmentNum => {
+                    const element = document.querySelector(`[data-installment="${installmentNum}"]`);
+                    if (element) {
+                        element.classList.add('paid');
+                        const payBtn = element.querySelector('.pay-button');
+                        const unpayBtn = element.querySelector('.unpay-button');
+                        if (payBtn) payBtn.style.display = 'none';
+                        if (unpayBtn) unpayBtn.style.display = 'inline-block';
+                    }
+                });
+                updateSummary();
+            }
+        }
+
+        // Salva o estado das parcelas no localStorage
+        function savePaymentStatus() {
+            const paidInstallments = [];
+            document.querySelectorAll('.installment.paid').forEach(el => {
+                paidInstallments.push(parseInt(el.dataset.installment));
+            });
+            localStorage.setItem('installmentStatus', JSON.stringify(paidInstallments));
+        }
+
+        // Marca uma parcela como paga
+        function markAsPaid(installmentNum) {
+            const element = document.querySelector(`[data-installment="${installmentNum}"]`);
+            element.classList.add('paid');
+            
+            const payBtn = element.querySelector('.pay-button');
+            const unpayBtn = element.querySelector('.unpay-button');
+            payBtn.style.display = 'none';
+            unpayBtn.style.display = 'inline-block';
+            
+            savePaymentStatus();
+            updateSummary();
+        }
+
+        // Desmarca uma parcela como paga
+        function markAsUnpaid(installmentNum) {
+            const element = document.querySelector(`[data-installment="${installmentNum}"]`);
+            element.classList.remove('paid');
+            
+            const payBtn = element.querySelector('.pay-button');
+            const unpayBtn = element.querySelector('.unpay-button');
+            payBtn.style.display = 'inline-block';
+            unpayBtn.style.display = 'none';
+            
+            savePaymentStatus();
+            updateSummary();
+        }
+
+        // Atualiza o resumo de parcelas
+        function updateSummary() {
+            const paidInstallments = document.querySelectorAll('.installment.paid');
+            const paidCount = paidInstallments.length;
+            const pendingCount = 8 - paidCount;
+            
+            let totalPaid = 0;
+            paidInstallments.forEach(el => {
+                totalPaid += parseFloat(el.dataset.value);
+            });
+            
+            document.getElementById('paidCount').textContent = paidCount;
+            document.getElementById('pendingCount').textContent = pendingCount;
+            document.getElementById('totalPaid').textContent = `R$ ${totalPaid.toFixed(2).replace('.', ',')}`;
+        }
+
+        // Toggle do modo admin com senha
+        document.getElementById('adminMode').addEventListener('change', function() {
+            if (this.checked) {
+                // Solicita a senha
+                const senha = prompt('Digite a senha de administrador:');
                 
-                <div class="space-y-4">
-                    <div>
-                        <label class="text-white text-sm font-bold mb-2 block">Tipo de Negócio</label>
-                        <input type="text" id="negocio" placeholder="Ex: E-commerce de roupas, Agência de marketing, Consultoria financeira..." class="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none">
-                    </div>
-                    
-                    <div>
-                        <label class="text-white text-sm font-bold mb-2 block">Produto/Serviço Principal</label>
-                        <input type="text" id="produto1" placeholder="Ex: Mentoria em vendas, Plataforma SaaS, Curso online..." class="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none">
-                    </div>
-                    
-                    <div>
-                        <label class="text-white text-sm font-bold mb-2 block">Principais Benefícios</label>
-                        <textarea id="beneficios" placeholder="Ex: Resultados em 30 dias, Suporte 24/7, Método comprovado..." rows="3" class="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none"></textarea>
-                    </div>
-                    
-                    <div>
-                        <label class="text-white text-sm font-bold mb-2 block">Diferenciais Competitivos</label>
-                        <textarea id="diferenciais" placeholder="Ex: Único no mercado com X, Tecnologia proprietária, 10 anos de experiência..." rows="3" class="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none"></textarea>
-                    </div>
-                    
-                    <div>
-                        <label class="text-white text-sm font-bold mb-2 block">Objeções Comuns</label>
-                        <textarea id="objecoes" placeholder="Ex: 'É muito caro', 'Não tenho tempo', 'Já tentei antes e não funcionou'..." rows="3" class="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none"></textarea>
-                    </div>
-                </div>
+                // Verifica se a senha está correta
+                if (senha === 'MS-parcela-wevertton8x') {
+                    // Ativa o modo admin
+                    const controls = document.querySelectorAll('.admin-controls');
+                    controls.forEach(control => {
+                        control.classList.add('active');
+                    });
+                } else {
+                    // Senha incorreta - desmarca o checkbox
+                    alert('Senha incorreta! Acesso negado.');
+                    this.checked = false;
+                }
+            } else {
+                // Desativa o modo admin
+                const controls = document.querySelectorAll('.admin-controls');
+                controls.forEach(control => {
+                    control.classList.remove('active');
+                });
+            }
+        });
+
+        // Carrega o estado ao iniciar a página
+        window.addEventListener('DOMContentLoaded', loadPaymentStatus);
+    </script>
+</body>
+</html>
 
-                <div class="bg-black rounded-lg p-5 mt-6 mb-4 border border-zinc-800">
-                    <pre id="preview-info" class="text-gray-300 text-xs whitespace-pre-wrap font-mono leading-relaxed"># INFORMAÇÕES DO SEU NEGÓCIO
 
-Tipo de Negócio: [Preencha acima]
-
-Produto/Serviço: [Preencha acima]
-
-Principais Benefícios:
-[Preencha acima]
-
-Diferenciais Competitivos:
-[Preencha acima]
-
-Objeções Comuns:
-[Preencha acima]
-
----
-INSTRUÇÕES: Cole estas informações junto com o prompt genérico na IA para que ela simule clientes do seu negócio específico.</pre>
-                </div>
-
-                <button onclick="copyInfo()" id="btn-copy-info" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-lg font-bold transition-all flex items-center justify-center gap-3">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                    COPIAR INFORMAÇÕES DO NEGÓCIO
-                </button>
-            </div>
-
-            <!-- Prompt Genérico -->
-            <div class="bg-zinc-900 rounded-xl p-6 mb-6">
-                <h3 class="text-white text-xl font-bold mb-3 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                    2. Copie o Prompt Base
-                </h3>
-                <p class="text-gray-400 text-sm mb-4">
-                    Cole este prompt + as informações do seu negócio na IA
-                </p>
-                <div class="bg-black rounded-lg p-5 mb-4 max-h-96 overflow-y-auto border border-zinc-800">
-                    <pre class="text-gray-300 text-xs whitespace-pre-wrap font-mono leading-relaxed" id="prompt-generico"># SISTEMA DE SIMULAÇÃO DE VENDAS
-
-Você é um simulador avançado de clientes potenciais. Sua função é:
-
-1. Interpretar diferentes perfis de clientes
-2. Responder naturalmente às abordagens de venda
-3. Apresentar objeções realistas
-4. Avaliar o desempenho do vendedor
-
-## PERFIS DE CLIENTES DISPONÍVEIS:
-
-1. PERFIL CÉTICO
-- Já tentou várias soluções antes
-- Desconfia de "mais uma promessa"
-- Precisa de muito embasamento
-- Faz muitas perguntas técnicas
-
-2. PERFIL EMOCIONAL
-- Está frustrado com a situação atual
-- Problemas relacionados ao desafio
-- Busca acolhimento
-- Sensível ao falar sobre o assunto
-
-3. PERFIL OCUPADO
-- Executivo/empresário
-- Pouco tempo disponível
-- Preocupado com praticidade
-- Foco em resultados rápidos
-
-4. PERFIL PESQUISADOR
-- Compara muito com outras soluções
-- Conhece termos técnicos
-- Precisa de dados e evidências
-- Faz muitas perguntas sobre diferenciais
-
-5. PERFIL PREÇO-SENSÍVEL
-- Muito focado no investimento
-- Compara preços constantemente
-- Precisa de muita justificativa de valor
-- Tenta negociar sempre
-
-## COMANDOS DE CONTROLE:
-
-/perfil [número] - Seleciona o perfil de cliente
-/avaliar - Gera relatório de avaliação do vendedor
-/objecao [tipo] - Gera uma objeção específica
-/interesse [1-10] - Define nível de interesse
-/dificuldade [1-10] - Define nível de dificuldade da simulação
-
-## SISTEMA DE AVALIAÇÃO:
-
-Ao final da simulação, gerar relatório com:
-
-1. PONTUAÇÃO (0-10):
-- Rapport e Conexão
-- Identificação de Necessidades
-- Apresentação da Solução
-- Manejo de Objeções
-- Técnicas de Fechamento
-
-2. ANÁLISE QUALITATIVA:
-- Pontos Fortes
-- Áreas de Melhoria
-- Momentos Críticos
-- Oportunidades Perdidas
-- Sugestões Específicas
-
-3. MÉTRICAS:
-- Tempo de Fala vs. Escuta
-- Perguntas Realizadas
-- Objeções Tratadas
-- Tentativas de Fechamento
-
-## REGRAS DE COMPORTAMENTO:
-
-1. Manter consistência com o perfil escolhido
-2. Reagir naturalmente às técnicas de venda
-3. Apresentar objeções realistas
-4. Nunca revelar que é uma IA simulando
-5. Manter o nível de dificuldade selecionado
-6. Fornecer feedback construtivo
-7. Adaptar respostas ao progresso da conversa
-
-## EXEMPLOS DE DIÁLOGOS:
-
-CÉTICO: "Já tentei várias coisas parecidas e nenhuma funcionou. O que faz sua solução ser diferente?"
-
-EMOCIONAL: "Estou cansado de me sentir assim, já tentei de tudo e nada funciona..."
-
-OCUPADO: "Não tenho tempo para algo complexo. Quanto tempo preciso dedicar?"
-
-PESQUISADOR: "Li sobre outras alternativas no mercado. Qual a diferença da sua solução?"
-
-PREÇO-SENSÍVEL: "Achei o investimento alto comparado com outras opções do mercado..."
-
-## INSTRUÇÕES DE USO:
-
-1. Selecione o perfil desejado usando /perfil [número]
-2. Defina o nível de dificuldade com /dificuldade [1-10]
-3. Inicie a simulação respondendo naturalmente
-4. Use /objecao para gerar objeções específicas
-5. Ao final, use /avaliar para gerar relatório completo</pre>
-                </div>
-                <button onclick="copyGenerico()" id="btn-copy-generico" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-lg font-bold transition-all flex items-center justify-center gap-3">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                    COPIAR PROMPT BASE
-                </button>
-            </div>
-
-            <!-- Guia de uso -->
-            <div class="bg-zinc-900 rounded-xl p-6">
-                <h3 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                        <line x1="12" y1="19" x2="12" y2="23"></line>
-                        <line x1="8" y1="23" x2="16" y2="23"></line>
-                    </svg>
-                    3. Como Usar - Modo Voz Recomendado
-                </h3>
-                <div class="space-y-3 text-gray-300 text-sm">
-                    <div class="flex gap-3">
-                        <span class="text-blue-500 font-bold">1.</span>
-                        <p>Cole as <strong>Informações do Negócio</strong> + <strong>Prompt Base</strong> no ChatGPT ou Claude</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <span class="text-blue-500 font-bold">2.</span>
-                        <p><strong class="text-blue-500">ATIVE O MODO VOZ</strong> da IA (ícone de microfone)</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <span class="text-blue-500 font-bold">3.</span>
-                        <p>Digite: <code class="bg-black px-2 py-1 rounded text-blue-500">/perfil 1</code> (escolha de 1 a 5)</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <span class="text-blue-500 font-bold">4.</span>
-                        <p>Digite: <code class="bg-black px-2 py-1 rounded text-blue-500">/dificuldade 7</code> (nível de 1 a 10)</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <span class="text-blue-500 font-bold">5.</span>
-                        <p>Comece sua abordagem de vendas <strong>falando naturalmente</strong></p>
-                    </div>
-                    <div class="flex gap-3">
-                        <span class="text-blue-500 font-bold">6.</span>
-                        <p>A IA vai responder por voz simulando o cliente</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <span class="text-blue-500 font-bold">7.</span>
-                        <p>Ao final, digite: <code class="bg-black px-2 py-1 rounded text-blue-500">/avaliar</code> para receber feedback completo</p>
-                    </div>
-                </div>
-                <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mt-4">
-                    <p class="text-blue-500 text-sm">
-                        💡 <strong>Dica:</strong> O modo voz torna a simulação 10x mais realista. É como uma ligação de vendas real!
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Content Personalizar -->
-        <div id="content-personalizar" style="display: none;">
-            <div class="bg-zinc-900 rounded-xl p-6 mb-6">
-                <h3 class="text-white text-xl font-bold mb-3 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                    </svg>
-                    Personalize Seu Prompt Agora
-                </h3>
-                <p class="text-gray-400 text-sm mb-6">
-                    Preencha os campos abaixo e gere seu prompt personalizado automaticamente
-                </p>
-                
-                <div class="space-y-4 mb-6">
-                    <div>
-                        <label class="text-white text-sm font-bold mb-2 block">Nome do Método/Produto</label>
-                        <input type="text" id="metodo" placeholder="Ex: Método SARI, Programa Alpha, Sistema X..." class="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none">
-                    </div>
-                    
-                    <div>
-                        <label class="text-white text-sm font-bold mb-2 block">Seu Nicho</label>
-                        <input type="text" id="nicho" placeholder="Ex: emagrecimento, vendas B2B, marketing digital..." class="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none">
-                    </div>
-                    
-                    <div>
-                        <label class="text-white text-sm font-bold mb-2 block">O que você vende</label>
-                        <input type="text" id="produto" placeholder="Ex: mentoria, curso online, consultoria..." class="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none">
-                    </div>
-                </div>
-
-                <div class="bg-black rounded-lg p-5 mb-4 max-h-96 overflow-y-auto border border-zinc-800">
-                    <pre id="preview-custom" class="text-gray-300 text-xs whitespace-pre-wrap font-mono leading-relaxed"># SISTEMA DE SIMULAÇÃO DE VENDAS - [SEU MÉTODO/PRODUTO]
-
-Você é um simulador avançado de clientes potenciais para [SEU PRODUTO/SERVIÇO] no nicho de [SEU NICHO]. Sua função é:
-
-1. Interpretar diferentes perfis de clientes
-2. Responder naturalmente às abordagens de venda
-3. Apresentar objeções realistas
-4. Avaliar o desempenho do vendedor
-
-## PERFIS DE CLIENTES DISPONÍVEIS:
-
-1. PERFIL CÉTICO
-- Já tentou várias soluções no mercado de [SEU NICHO]
-- Desconfia de "mais uma promessa"
-- Precisa de muito embasamento sobre [SEU PRODUTO]
-- Faz muitas perguntas técnicas
-
-2. PERFIL EMOCIONAL
-- Está frustrado com a situação atual em [SEU NICHO]
-- Problemas relacionados ao desafio
-- Busca acolhimento
-- Sensível ao falar sobre o assunto
-
-3. PERFIL OCUPADO
-- Executivo/empresário no nicho de [SEU NICHO]
-- Pouco tempo disponível
-- Preocupado com praticidade
-- Foco em resultados rápidos
-
-4. PERFIL PESQUISADOR
-- Compara [SEU MÉTODO] com outras soluções
-- Conhece termos técnicos do nicho
-- Precisa de dados e evidências
-- Faz muitas perguntas sobre diferenciais
-
-5. PERFIL PREÇO-SENSÍVEL
-- Muito focado no investimento em [SEU PRODUTO]
-- Compara preços constantemente
-- Precisa de muita justificativa de valor
-- Tenta negociar sempre
-
-## COMANDOS DE CONTROLE:
-
-/perfil [número] - Seleciona o perfil de cliente
-/avaliar - Gera relatório de avaliação do vendedor
-/objecao [tipo] - Gera uma objeção específica
-/interesse [1-10] - Define nível de interesse
-/dificuldade [1-10] - Define nível de dificuldade da simulação
-
-## SISTEMA DE AVALIAÇÃO:
-
-Ao final da simulação, gerar relatório com:
-
-1. PONTUAÇÃO (0-10):
-- Rapport e Conexão
-- Identificação de Necessidades
-- Apresentação da Solução
-- Manejo de Objeções
-- Técnicas de Fechamento
-
-2. ANÁLISE QUALITATIVA:
-- Pontos Fortes
-- Áreas de Melhoria
-- Momentos Críticos
-- Oportunidades Perdidas
-- Sugestões Específicas
-
-3. MÉTRICAS:
-- Tempo de Fala vs. Escuta
-- Perguntas Realizadas
-- Objeções Tratadas
-- Tentativas de Fechamento
-
-## REGRAS DE COMPORTAMENTO:
-
-1. Manter consistência com o perfil escolhido
-2. Reagir naturalmente às técnicas de venda
-3. Apresentar objeções realistas do nicho de [SEU NICHO]
-4. Nunca revelar que é uma IA simulando
-5. Manter o nível de dificuldade selecionado
-6. Fornecer feedback construtivo
-7. Adaptar respostas ao progresso da conversa
-
-## EXEMPLOS DE DIÁLOGOS:
-
-CÉTICO: "Já tentei várias coisas parecidas em [SEU NICHO] e nenhuma funcionou. O que faz [SEU MÉTODO] ser diferente?"
-
-EMOCIONAL: "Estou cansado de me sentir assim com [problema do nicho], já tentei de tudo e nada funciona..."
-
-OCUPADO: "Não tenho tempo para algo complexo. Quanto tempo [SEU PRODUTO] exige?"
-
-PESQUISADOR: "Li sobre outras alternativas para [SEU NICHO]. Qual a diferença de [SEU MÉTODO]?"
-
-PREÇO-SENSÍVEL: "Achei o investimento em [SEU PRODUTO] alto comparado com outras opções do mercado..."
-
-## INSTRUÇÕES DE USO:
-
-1. Selecione o perfil desejado usando /perfil [número]
-2. Defina o nível de dificuldade com /dificuldade [1-10]
-3. Inicie a simulação respondendo naturalmente
-4. Use /objecao para gerar objeções específicas
-5. Ao final, use /avaliar para gerar relatório completo</pre>
-                </div>
-
-                <button onclick="copyCustom()" id="btn-copy-custom" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-lg font-bold transition-all flex items-center justify-center gap-3">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                    COPIAR PROMPT PERSONALIZADO
-                </button>
-            </div>
-
-            <!-- Guia de uso personalizar -->
-            <div class="bg-zinc-900 rounded-xl p-6">
-                <h3 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                        <line x1="12" y1="19" x2="12" y2="23"></line>
-                        <line x1="8" y1="23" x2="16" y2="23"></line>
-                    </svg>
-                    Como Usar - Modo Voz Recomendado
-                </h3>
-                <div class="space-y-3 text-gray-300 text-sm">
-                    <div class="flex gap-3">
-                        <span class="text-blue-500 font-bold">1.</span>
-                        <p>Preencha os 3 campos acima com os dados do seu negócio</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <span class="text-blue-500 font-bold">2.</span>
-                        <p>Cole o prompt gerado no ChatGPT ou Claude</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <span class="text-blue-500 font-bold">3.</span>
-                        <p><strong class="text-blue-500">ATIVE O MODO VOZ</strong> da IA (ícone de microfone)</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <span class="text-blue-500 font-bold">4.</span>
-                        <p>Digite: <code class="bg-black px-2 py-1 rounded text-blue-500">/perfil 1</code> (escolha de 1 a 5)</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <span class="text-blue-500 font-bold">5.</span>
-                        <p>Digite: <code class="bg-black px-2 py-1 rounded text-blue-500">/dificuldade 7</code> (nível de 1 a 10)</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <span class="text-blue-500 font-bold">6.</span>
-                        <p>Comece sua abordagem de vendas <strong>falando naturalmente</strong></p>
-                    </div>
-                    <div class="flex gap-3">
-                        <span class="text-blue-500 font-bold">7.</span>
-                        <p>A IA vai responder por voz simulando o cliente</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <span class="text-blue-500 font-bold">8.</span>
-                        <p>Ao final, digite: <code class="bg-black px-2 py-1 rounded text-blue-500">/avaliar</code> para receber feedback</p>
-                    </div>
-                </div>
-                <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mt-4">
-                    <p class="text-blue-500 text-sm">
-                        💡 <strong>Dica:</strong> O modo voz torna a simulação 10x mais realista. É como uma ligação de vendas real!
-                    </p>
-                </div>
-            </div>
-        </div>
