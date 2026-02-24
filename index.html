@@ -1,277 +1,1646 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de Parcelas - Weverttom</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
+import { useState, useEffect, useCallback } from "react";
 
-        .container {
-            max-width: 600px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-        }
+// ─── STORAGE HELPERS ──────────────────────────────────────────────────────────
+const S = {
+  async get(k) {
+    try { const r = await window.storage.get(k); return r ? JSON.parse(r.value) : null; } catch { return null; }
+  },
+  async set(k, v) {
+    try { await window.storage.set(k, JSON.stringify(v)); return true; } catch { return false; }
+  }
+};
 
-        h2 {
-            text-align: center;
-            margin-bottom: 10px;
-        }
+// ─── INITIAL DATA ─────────────────────────────────────────────────────────────
+const INITIAL_CONFIG = {
+  teamName: "Futebol Amador FC",
+  shield: "⚽",
+  monthlyFee: 80,
+  squadPhoto: null
+};
 
-        .summary {
-            background: #eef;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
+const INITIAL_PLAYERS = [
+  { id: "1", name: "Carlos Eduardo", phone: "11999990001", position: "Goleiro", shirt: 1, dob: "1990-03-15", photo: null, login: "carlos", password: "123456", role: "player", subscriptionId: "sub_001" },
+  { id: "2", name: "Rafael Santos", phone: "11999990002", position: "Zagueiro", shirt: 4, dob: "1992-07-22", photo: null, login: "rafael", password: "123456", role: "player", subscriptionId: "sub_002" },
+  { id: "3", name: "Bruno Lima", phone: "11999990003", position: "Lateral Direito", shirt: 2, dob: "1994-01-10", photo: null, login: "bruno", password: "123456", role: "player", subscriptionId: "sub_003" },
+  { id: "4", name: "André Costa", phone: "11999990004", position: "Volante", shirt: 5, dob: "1991-11-05", photo: null, login: "andre", password: "123456", role: "player", subscriptionId: "sub_004" },
+  { id: "5", name: "Lucas Ferreira", phone: "11999990005", position: "Meia", shirt: 8, dob: "1993-09-30", photo: null, login: "lucas", password: "123456", role: "player", subscriptionId: "sub_005" },
+  { id: "6", name: "Felipe Rocha", phone: "11999990006", position: "Atacante", shirt: 9, dob: "1995-04-18", photo: null, login: "felipe", password: "123456", role: "player", subscriptionId: "sub_006" },
+  { id: "7", name: "Mateus Alves", phone: "11999990007", position: "Atacante", shirt: 11, dob: "1996-12-25", photo: null, login: "mateus", password: "123456", role: "player", subscriptionId: "sub_007" },
+  { id: "admin", name: "Administrador", phone: "11999990000", position: "Técnico", shirt: 0, dob: "1985-01-01", photo: null, login: "admin", password: "admin123", role: "admin", subscriptionId: null }
+];
 
-        .installment {
-            padding: 15px;
-            background: #fafafa;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid #ddd;
-        }
+const INITIAL_FEES = {
+  "1": { status: "paid", daysLate: 0, paidAt: "2025-02-10" },
+  "2": { status: "late", daysLate: 15, paidAt: null },
+  "3": { status: "paid", daysLate: 0, paidAt: "2025-02-08" },
+  "4": { status: "late", daysLate: 5, paidAt: null },
+  "5": { status: "paid", daysLate: 0, paidAt: "2025-02-10" },
+  "6": { status: "late", daysLate: 28, paidAt: null },
+  "7": { status: "paid", daysLate: 0, paidAt: "2025-02-09" }
+};
 
-        .installment.paid {
-            background: #d4ffd4;
-            border-color: #28a745;
-        }
+const INITIAL_TRANSACTIONS = [
+  { id: "t1", type: "income", category: "Mensalidades", amount: 480, date: "2025-02-10", note: "6 mensalidades pagas" },
+  { id: "t2", type: "expense", category: "Arbitragem", amount: 150, date: "2025-02-08", note: "Jogo vs Atlético" },
+  { id: "t3", type: "income", category: "Jogos em casa", amount: 200, date: "2025-02-08", note: "Renda do jogo" },
+  { id: "t4", type: "expense", category: "Manutenção de campo", amount: 80, date: "2025-02-05", note: "Limpeza geral" },
+  { id: "t5", type: "income", category: "Patrocínio", amount: 500, date: "2025-02-01", note: "Patrocinador Cervejaria" },
+  { id: "t6", type: "expense", category: "Jogo fora", amount: 120, date: "2025-01-25", note: "Transporte" },
+];
 
-        .installment .value {
-            font-weight: bold;
-        }
+const INITIAL_MATCHES = [
+  { id: "m1", date: "2025-02-08", local: "Casa", field: "Campo do Ibirapuera", rival: "Atlético FC", scoreUs: 3, scoreThem: 1, goals: [{ playerId: "6", count: 2 }, { playerId: "5", count: 1 }], attendance: ["1","2","3","4","5","6","7"] },
+  { id: "m2", date: "2025-01-25", local: "Fora", field: "Estádio Municipal", rival: "União SC", scoreUs: 1, scoreThem: 1, goals: [{ playerId: "7", count: 1 }], attendance: ["1","2","4","5","6","7"] },
+  { id: "m3", date: "2025-01-18", local: "Casa", field: "Campo do Ibirapuera", rival: "Cruzeiro Amador", scoreUs: 4, scoreThem: 0, goals: [{ playerId: "6", count: 2 }, { playerId: "7", count: 1 }, { playerId: "4", count: 1 }], attendance: ["1","2","3","4","5","6","7"] },
+  { id: "m4", date: "2025-01-11", local: "Fora", field: "Arena Popular", rival: "Santos Sub", scoreUs: 0, scoreThem: 2, goals: [], attendance: ["1","3","5","6"] },
+];
 
-        .admin-controls {
-            display: none;
-        }
+// ─── STYLES ───────────────────────────────────────────────────────────────────
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&display=swap');
+  
+  :root {
+    --green: #00c853;
+    --green-dark: #009624;
+    --green-light: #69f0ae;
+    --red: #ff1744;
+    --gold: #ffd600;
+    --bg: #0a0f0a;
+    --bg2: #111811;
+    --bg3: #182018;
+    --card: #1a221a;
+    --border: #2a3a2a;
+    --text: #e8f5e8;
+    --muted: #7a9a7a;
+    --white: #ffffff;
+  }
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body { 
+    font-family: 'Barlow', sans-serif; 
+    background: var(--bg); 
+    color: var(--text);
+    min-height: 100vh;
+  }
+  
+  /* LOGIN */
+  .login-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 30% 50%, #0a2010 0%, #050905 60%);
+    position: relative;
+    overflow: hidden;
+  }
+  .login-wrap::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,200,83,0.08) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .login-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px 40px;
+    width: 380px;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  }
+  .login-shield {
+    font-size: 56px;
+    text-align: center;
+    display: block;
+    margin-bottom: 8px;
+  }
+  .login-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--green);
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .login-sub {
+    color: var(--muted);
+    text-align: center;
+    font-size: 13px;
+    margin-bottom: 32px;
+  }
+  .input-group { margin-bottom: 16px; }
+  .input-group label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; }
+  .inp {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 12px 14px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .inp:focus { border-color: var(--green); }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: none;
+    font-family: 'Barlow', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .btn-primary { background: var(--green); color: #000; }
+  .btn-primary:hover { background: var(--green-light); transform: translateY(-1px); }
+  .btn-danger { background: var(--red); color: #fff; }
+  .btn-danger:hover { opacity: 0.85; }
+  .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--green); color: var(--green); }
+  .btn-gold { background: var(--gold); color: #000; }
+  .btn-sm { padding: 7px 14px; font-size: 12px; }
+  .btn-full { width: 100%; }
+  .btn-icon { padding: 8px; min-width: 36px; }
+  
+  /* LAYOUT */
+  .app-wrap { display: flex; min-height: 100vh; }
+  
+  /* SIDEBAR */
+  .sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 100;
+    transition: transform 0.3s;
+  }
+  .sidebar-header {
+    padding: 20px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .team-badge { font-size: 28px; }
+  .team-name { 
+    font-family: 'Bebas Neue', sans-serif; 
+    font-size: 16px; 
+    letter-spacing: 1px; 
+    color: var(--green);
+    line-height: 1.2;
+  }
+  .team-sub { font-size: 11px; color: var(--muted); }
+  .sidebar-nav { flex: 1; padding: 16px 8px; overflow-y: auto; }
+  .nav-section { margin-bottom: 20px; }
+  .nav-section-title { 
+    font-size: 10px; 
+    font-weight: 700; 
+    letter-spacing: 2px; 
+    color: var(--muted); 
+    text-transform: uppercase; 
+    padding: 0 8px; 
+    margin-bottom: 4px; 
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    transition: all 0.15s;
+    margin-bottom: 2px;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: rgba(0,200,83,0.12); color: var(--green); }
+  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+  .nav-badge { 
+    margin-left: auto; 
+    background: var(--red); 
+    color: #fff; 
+    font-size: 10px; 
+    font-weight: 700; 
+    padding: 2px 7px; 
+    border-radius: 100px; 
+  }
+  .sidebar-user {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--green-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: #000;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 13px; font-weight: 600; truncate: ellipsis; }
+  .user-role { font-size: 11px; color: var(--muted); }
+  
+  /* MAIN */
+  .main { margin-left: 240px; flex: 1; min-height: 100vh; }
+  
+  /* TOPBAR */
+  .topbar {
+    position: sticky;
+    top: 0;
+    background: rgba(10,15,10,0.9);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 50;
+  }
+  .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 1px; }
+  
+  /* CONTENT */
+  .content { padding: 24px; }
+  
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .card-title { 
+    font-family: 'Bebas Neue', sans-serif; 
+    font-size: 16px; 
+    letter-spacing: 1px; 
+    color: var(--muted); 
+    margin-bottom: 16px; 
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  /* GRID */
+  .grid { display: grid; gap: 16px; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid-auto { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  
+  /* STAT CARDS */
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 100%; height: 3px;
+  }
+  .stat-card.green::after { background: var(--green); }
+  .stat-card.red::after { background: var(--red); }
+  .stat-card.gold::after { background: var(--gold); }
+  .stat-card.blue::after { background: #2979ff; }
+  .stat-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--text); line-height: 1; }
+  .stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  
+  /* TABLE */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 12px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 14px; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  
+  /* STATUS BADGES */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-paid { background: rgba(0,200,83,0.15); color: var(--green); }
+  .badge-late { background: rgba(255,23,68,0.15); color: var(--red); }
+  .badge-admin { background: rgba(255,214,0,0.15); color: var(--gold); }
+  .badge-win { background: rgba(0,200,83,0.15); color: var(--green); }
+  .badge-loss { background: rgba(255,23,68,0.15); color: var(--red); }
+  .badge-draw { background: rgba(255,214,0,0.15); color: var(--gold); }
+  
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    padding: 20px;
+  }
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  .modal-title { 
+    font-family: 'Bebas Neue', sans-serif; 
+    font-size: 22px; 
+    letter-spacing: 1px; 
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-close { 
+    cursor: pointer; 
+    color: var(--muted); 
+    font-size: 20px; 
+    background: none; 
+    border: none; 
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+  .modal-close:hover { color: var(--red); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-full { grid-column: 1 / -1; }
+  .form-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+  
+  /* TABS */
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--bg3); border-radius: 8px; padding: 4px; }
+  .tab {
+    flex: 1;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .tab.active { background: var(--green); color: #000; }
+  
+  /* PLAYER CARD */
+  .player-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .player-card:hover { border-color: var(--green); }
+  .player-card.late { border-color: rgba(255,23,68,0.4); }
+  .player-avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: var(--green-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: #000;
+    overflow: hidden;
+    border: 3px solid var(--border);
+  }
+  .player-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .player-shirt {
+    position: absolute;
+    top: 12px; right: 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    padding: 2px 8px;
+    color: var(--gold);
+  }
+  .player-name { font-weight: 700; font-size: 15px; }
+  .player-pos { font-size: 12px; color: var(--muted); }
+  
+  /* MATCH CARD */
+  .match-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: border-color 0.2s;
+  }
+  .match-card:hover { border-color: var(--green); }
+  .match-score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    line-height: 1;
+    color: var(--white);
+    white-space: nowrap;
+  }
+  .match-vs { color: var(--muted); font-size: 13px; }
+  .match-info { flex: 1; }
+  .match-rival { font-weight: 700; font-size: 15px; }
+  .match-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  
+  /* TOPBAR MOBILE TOGGLE */
+  .menu-toggle { display: none; background: none; border: none; color: var(--text); font-size: 22px; cursor: pointer; }
+  
+  /* SECTION GAP */
+  .section { margin-bottom: 24px; }
+  
+  /* PROGRESS BAR */
+  .progress-bar { height: 6px; background: var(--bg3); border-radius: 100px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green); border-radius: 100px; transition: width 0.4s; }
+  
+  /* ALERT */
+  .alert { padding: 12px 16px; border-radius: 8px; font-size: 13px; display: flex; align-items: center; gap: 10px; }
+  .alert-error { background: rgba(255,23,68,0.1); border: 1px solid rgba(255,23,68,0.3); color: var(--red); }
+  .alert-success { background: rgba(0,200,83,0.1); border: 1px solid rgba(0,200,83,0.3); color: var(--green); }
+  
+  /* SELECT */
+  select.inp { appearance: none; cursor: pointer; }
+  
+  /* FLEX UTILS */
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .gap-2 { gap: 8px; }
+  .gap-3 { gap: 12px; }
+  .gap-4 { gap: 16px; }
+  .mt-1 { margin-top: 4px; }
+  .mt-2 { margin-top: 8px; }
+  .mt-3 { margin-top: 12px; }
+  .mt-4 { margin-top: 16px; }
+  .mb-4 { margin-bottom: 16px; }
+  .text-muted { color: var(--muted); }
+  .text-green { color: var(--green); }
+  .text-red { color: var(--red); }
+  .text-gold { color: var(--gold); }
+  .text-sm { font-size: 12px; }
+  .font-bold { font-weight: 700; }
+  .text-right { text-align: right; }
+  
+  /* SCOREBOARD */
+  .scoreboard {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 24px;
+    background: var(--bg3);
+    border-radius: 12px;
+    margin-bottom: 20px;
+  }
+  .score-team { text-align: center; }
+  .score-team-name { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .score-num { font-family: 'Bebas Neue', sans-serif; font-size: 56px; line-height: 1; color: var(--white); }
+  .score-sep { font-family: 'Bebas Neue', sans-serif; font-size: 40px; color: var(--muted); }
+  
+  /* ARTILHEIRO RANK */
+  .rank-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .rank-item:last-child { border-bottom: none; }
+  .rank-pos {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: var(--bg3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .rank-pos.gold { background: rgba(255,214,0,0.2); color: var(--gold); }
+  .rank-pos.silver { background: rgba(200,200,200,0.15); color: #aaa; }
+  .rank-pos.bronze { background: rgba(205,127,50,0.2); color: #cd7f32; }
+  
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; }
+    .menu-toggle { display: block; }
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .content { padding: 16px; }
+  }
+`;
 
-        .admin-controls.active {
-            display: inline-block;
-        }
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+const initials = (name) => name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0,2);
+const fmt = (n) => `R$ ${n.toFixed(2).replace(".", ",")}`;
+const fmtDate = (d) => d ? new Date(d + "T00:00:00").toLocaleDateString("pt-BR") : "-";
 
-        button {
-            padding: 6px 10px;
-            border: none;
-            background: #007bff;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+export default function App() {
+  const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [page, setPage] = useState("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  // Data state
+  const [config, setConfig] = useState(INITIAL_CONFIG);
+  const [players, setPlayers] = useState(INITIAL_PLAYERS);
+  const [fees, setFees] = useState(INITIAL_FEES);
+  const [transactions, setTransactions] = useState(INITIAL_TRANSACTIONS);
+  const [matches, setMatches] = useState(INITIAL_MATCHES);
+  
+  // Modal state
+  const [modal, setModal] = useState(null);
 
-        button.unpay-button {
-            background: #dc3545;
-            display: none;
-        }
+  useEffect(() => {
+    const style = document.createElement("style");
+    style.textContent = css;
+    document.head.appendChild(style);
+    
+    // Load from storage
+    (async () => {
+      const c = await S.get("config"); if (c) setConfig(c);
+      const p = await S.get("players"); if (p) setPlayers(p);
+      const f = await S.get("fees"); if (f) setFees(f);
+      const t = await S.get("transactions"); if (t) setTransactions(t);
+      const m = await S.get("matches"); if (m) setMatches(m);
+      setLoading(false);
+    })();
+    
+    return () => document.head.removeChild(style);
+  }, []);
 
-        label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
+  const save = useCallback(async (key, value) => {
+    await S.set(key, value);
+  }, []);
 
-    </style>
-</head>
+  const updateConfig = (v) => { setConfig(v); save("config", v); };
+  const updatePlayers = (v) => { setPlayers(v); save("players", v); };
+  const updateFees = (v) => { setFees(v); save("fees", v); };
+  const updateTransactions = (v) => { setTransactions(v); save("transactions", v); };
+  const updateMatches = (v) => { setMatches(v); save("matches", v); };
 
-<body>
+  const handleLogin = (login, password) => {
+    const user = players.find(p => p.login === login && p.password === password);
+    if (user) { setCurrentUser(user); return true; }
+    return false;
+  };
 
-<div class="container">
-    <h2>Parcelas do Curso - Weverttom</h2>
+  if (loading) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",background:"#0a0f0a",color:"#00c853",fontFamily:"Bebas Neue,sans-serif",fontSize:28,letterSpacing:2}}>CARREGANDO...</div>;
+  if (!currentUser) return <LoginPage onLogin={handleLogin} config={config} />;
 
-    <label>
-        <input type="checkbox" id="adminMode">
-        Modo Administrador
-    </label>
+  const isAdmin = currentUser.role === "admin";
+  const latePlayers = Object.entries(fees).filter(([,f]) => f.status === "late").length;
+  const balance = transactions.reduce((s, t) => t.type === "income" ? s + t.amount : s - t.amount, 0);
+  const nextMatch = [...matches].filter(m => m.date >= new Date().toISOString().slice(0,10)).sort((a,b) => a.date.localeCompare(b.date))[0];
 
-    <div class="summary">
-        <p><b>Pagas:</b> <span id="paidCount">0</span></p>
-        <p><b>Pendentes:</b> <span id="pendingCount">0</span></p>
-        <p><b>Total Pago:</b> <span id="totalPaid">R$ 0,00</span></p>
-    </div>
+  const pages = {
+    dashboard: <Dashboard players={players} fees={fees} transactions={transactions} matches={matches} config={config} isAdmin={isAdmin} onNav={setPage} onModal={setModal} />,
+    mensalidades: <MensalidadesPage players={players} fees={fees} config={config} isAdmin={isAdmin} onUpdateFees={updateFees} onModal={setModal} />,
+    financeiro: <FinanceiroPage transactions={transactions} isAdmin={isAdmin} onUpdateTransactions={updateTransactions} onModal={setModal} />,
+    jogos: <JogosPage matches={matches} players={players} isAdmin={isAdmin} onUpdateMatches={updateMatches} onModal={setModal} />,
+    presenca: <PresencaPage matches={matches} players={players} />,
+    elenco: <ElencoPage players={players} fees={fees} isAdmin={isAdmin} currentUser={currentUser} onUpdatePlayers={updatePlayers} onModal={setModal} />,
+    configuracoes: isAdmin && <ConfigPage config={config} onUpdateConfig={updateConfig} />,
+  };
 
-    <!-- LISTA DE PARCELAS -->
-    <div class="installment" data-installment="1" data-value="97.00">
-        <span>Parcela 1</span>
-        <span class="value">R$ 97,00</span>
-        <div class="admin-controls">
-            <button class="pay-button" onclick="markAsPaid(1)">Marcar Pago</button>
-            <button class="unpay-button" onclick="markAsUnpaid(1)">Desmarcar</button>
+  return (
+    <div className="app-wrap">
+      {/* Overlay for mobile */}
+      {sidebarOpen && <div onClick={() => setSidebarOpen(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:99}} />}
+      
+      <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
+        <div className="sidebar-header">
+          <div className="team-badge">{config.shield}</div>
+          <div>
+            <div className="team-name">{config.teamName}</div>
+            <div className="team-sub">Sistema de Gestão</div>
+          </div>
         </div>
-    </div>
-
-    <div class="installment" data-installment="2" data-value="97.00">
-        <span>Parcela 2</span>
-        <span class="value">R$ 97,00</span>
-        <div class="admin-controls">
-            <button class="pay-button" onclick="markAsPaid(2)">Marcar Pago</button>
-            <button class="unpay-button" onclick="markAsUnpaid(2)">Desmarcar</button>
+        <nav className="sidebar-nav">
+          <div className="nav-section">
+            <div className="nav-section-title">Principal</div>
+            {[
+              { id: "dashboard", icon: "📊", label: "Dashboard" },
+              { id: "mensalidades", icon: "💰", label: "Mensalidades", badge: latePlayers || null },
+            ].map(n => (
+              <div key={n.id} className={`nav-item ${page === n.id ? "active" : ""}`} onClick={() => { setPage(n.id); setSidebarOpen(false); }}>
+                <span className="icon">{n.icon}</span> {n.label}
+                {n.badge ? <span className="nav-badge">{n.badge}</span> : null}
+              </div>
+            ))}
+          </div>
+          <div className="nav-section">
+            <div className="nav-section-title">Esporte</div>
+            {[
+              { id: "jogos", icon: "⚽", label: "Jogos" },
+              { id: "presenca", icon: "📅", label: "Presença" },
+              { id: "elenco", icon: "👥", label: "Elenco" },
+            ].map(n => (
+              <div key={n.id} className={`nav-item ${page === n.id ? "active" : ""}`} onClick={() => { setPage(n.id); setSidebarOpen(false); }}>
+                <span className="icon">{n.icon}</span> {n.label}
+              </div>
+            ))}
+          </div>
+          <div className="nav-section">
+            <div className="nav-section-title">Financeiro</div>
+            <div className={`nav-item ${page === "financeiro" ? "active" : ""}`} onClick={() => { setPage("financeiro"); setSidebarOpen(false); }}>
+              <span className="icon">💼</span> Financeiro
+            </div>
+          </div>
+          {isAdmin && (
+            <div className="nav-section">
+              <div className="nav-section-title">Admin</div>
+              <div className={`nav-item ${page === "configuracoes" ? "active" : ""}`} onClick={() => { setPage("configuracoes"); setSidebarOpen(false); }}>
+                <span className="icon">⚙️</span> Configurações
+              </div>
+            </div>
+          )}
+        </nav>
+        <div className="sidebar-user">
+          <div className="avatar">{currentUser.photo ? <img src={currentUser.photo} /> : initials(currentUser.name)}</div>
+          <div className="user-info">
+            <div className="user-name">{currentUser.name.split(" ")[0]}</div>
+            <div className="user-role">{isAdmin ? "Administrador" : `Camisa ${currentUser.shirt}`}</div>
+          </div>
+          <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setCurrentUser(null)} title="Sair">🚪</button>
         </div>
-    </div>
-
-    <div class="installment" data-installment="3" data-value="97.00">
-        <span>Parcela 3</span>
-        <span class="value">R$ 97,00</span>
-        <div class="admin-controls">
-            <button class="pay-button" onclick="markAsPaid(3)">Marcar Pago</button>
-            <button class="unpay-button" onclick="markAsUnpaid(3)">Desmarcar</button>
+      </aside>
+      
+      <main className="main">
+        <header className="topbar">
+          <div className="flex items-center gap-3">
+            <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
+            <div className="page-title">
+              {{ dashboard: "Dashboard", mensalidades: "Mensalidades", financeiro: "Financeiro", jogos: "Jogos", presenca: "Presença", elenco: "Elenco", configuracoes: "Configurações" }[page]}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted">Saldo:</span>
+            <span className={`font-bold text-sm ${balance >= 0 ? "text-green" : "text-red"}`}>{fmt(balance)}</span>
+          </div>
+        </header>
+        <div className="content">
+          {pages[page] || pages.dashboard}
         </div>
+      </main>
+      
+      {modal && <Modal {...modal} onClose={() => setModal(null)} />}
     </div>
-
-    <div class="installment" data-installment="4" data-value="97.00">
-        <span>Parcela 4</span>
-        <span class="value">R$ 97,00</span>
-        <div class="admin-controls">
-            <button class="pay-button" onclick="markAsPaid(4)">Marcar Pago</button>
-            <button class="unpay-button" onclick="markAsUnpaid(4)">Desmarcar</button>
-        </div>
-    </div>
-
-    <div class="installment" data-installment="5" data-value="97.00">
-        <span>Parcela 5</span>
-        <span class="value">R$ 97,00</span>
-        <div class="admin-controls">
-            <button class="pay-button" onclick="markAsPaid(5)">Marcar Pago</button>
-            <button class="unpay-button" onclick="markAsUnpaid(5)">Desmarcar</button>
-        </div>
-    </div>
-
-    <div class="installment" data-installment="6" data-value="97.00">
-        <span>Parcela 6</span>
-        <span class="value">R$ 97,00</span>
-        <div class="admin-controls">
-            <button class="pay-button" onclick="markAsPaid(6)">Marcar Pago</button>
-            <button class="unpay-button" onclick="markAsUnpaid(6)">Desmarcar</button>
-        </div>
-    </div>
-
-    <div class="installment" data-installment="7" data-value="97.00">
-        <span>Parcela 7</span>
-        <span class="value">R$ 97,00</span>
-        <div class="admin-controls">
-            <button class="pay-button" onclick="markAsPaid(7)">Marcar Pago</button>
-            <button class="unpay-button" onclick="markAsUnpaid(7)">Desmarcar</button>
-        </div>
-    </div>
-
-    <div class="installment" data-installment="8" data-value="97.00">
-        <span>Parcela 8</span>
-        <span class="value">R$ 97,00</span>
-        <div class="admin-controls">
-            <button class="pay-button" onclick="markAsPaid(8)">Marcar Pago</button>
-            <button class="unpay-button" onclick="markAsUnpaid(8)">Desmarcar</button>
-        </div>
-    </div>
-
-</div>
-
-<!-- SCRIPT FINAL (SINCRONIZA COM A PLANILHA) -->
-<script>
-
-const API_URL = "https://script.google.com/macros/s/AKfycbzaSRjrP1bfjWgqiiWrOECu169sxqOoGAKRVRGZcSqW5pRwk461eDSxCfvsgKCTQFzi/exec";
-const API_TOKEN = "JkiZwfLFSO3MbBNWdCJOhJHgtgI0EJUFZOifVcU9sXbHoGFhrb0nopePh8jRwJF7";
-
-async function loadPaymentStatus() {
-    try {
-        const res = await fetch(`${API_URL}?token=${API_TOKEN}`);
-        const data = await res.json();
-        const status = data.paidInstallments || [];
-
-        status.forEach(num => {
-            const el = document.querySelector(`[data-installment="${num}"]`);
-            if (!el) return;
-
-            el.classList.add("paid");
-            el.querySelector(".pay-button").style.display = "none";
-            el.querySelector(".unpay-button").style.display = "inline-block";
-        });
-
-        updateSummary();
-
-    } catch (err) {
-        console.error("Erro ao carregar:", err);
-    }
+  );
 }
 
-async function savePaymentStatus() {
-    const paid = [...document.querySelectorAll(".installment.paid")]
-        .map(el => parseInt(el.dataset.installment));
-
-    await fetch(`${API_URL}?token=${API_TOKEN}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paidInstallments: paid })
-    });
+// ─── LOGIN PAGE ───────────────────────────────────────────────────────────────
+function LoginPage({ onLogin, config }) {
+  const [login, setLogin] = useState("");
+  const [pass, setPass] = useState("");
+  const [err, setErr] = useState("");
+  
+  const handle = (e) => {
+    e.preventDefault();
+    if (!onLogin(login, pass)) setErr("Login ou senha incorretos");
+  };
+  
+  return (
+    <div className="login-wrap">
+      <div className="login-card">
+        <span className="login-shield">{config.shield}</span>
+        <div className="login-title">{config.teamName}</div>
+        <div className="login-sub">Sistema de Gestão Esportiva</div>
+        {err && <div className="alert alert-error mb-4">⚠️ {err}</div>}
+        <form onSubmit={handle}>
+          <div className="input-group">
+            <label>Login</label>
+            <input className="inp" value={login} onChange={e => { setLogin(e.target.value); setErr(""); }} placeholder="Seu login" required />
+          </div>
+          <div className="input-group">
+            <label>Senha</label>
+            <input className="inp" type="password" value={pass} onChange={e => { setPass(e.target.value); setErr(""); }} placeholder="••••••" required />
+          </div>
+          <button type="submit" className="btn btn-primary btn-full" style={{marginTop:8}}>Entrar</button>
+        </form>
+        <div style={{textAlign:"center",marginTop:16,fontSize:12,color:"var(--muted)"}}>
+          Não tem acesso? Fale com o administrador.
+        </div>
+      </div>
+    </div>
+  );
 }
 
-async function markAsPaid(n) {
-    const el = document.querySelector(`[data-installment="${n}"]`);
-    el.classList.add("paid");
-    el.querySelector(".pay-button").style.display = "none";
-    el.querySelector(".unpay-button").style.display = "inline-block";
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+function Dashboard({ players, fees, transactions, matches, config, isAdmin, onNav }) {
+  const balance = transactions.reduce((s, t) => t.type === "income" ? s + t.amount : s - t.amount, 0);
+  const income = transactions.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
+  const expenses = transactions.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0);
+  const latePlayers = Object.entries(fees).filter(([,f]) => f.status === "late");
+  const realPlayers = players.filter(p => p.role === "player");
+  
+  // Match stats
+  const mWon = matches.filter(m => m.scoreUs > m.scoreThem).length;
+  const mLost = matches.filter(m => m.scoreUs < m.scoreThem).length;
+  const mDraw = matches.filter(m => m.scoreUs === m.scoreThem).length;
+  const totalGoals = matches.reduce((s, m) => s + m.scoreUs, 0);
+  
+  // Top scorer
+  const goalMap = {};
+  matches.forEach(m => m.goals.forEach(g => { goalMap[g.playerId] = (goalMap[g.playerId] || 0) + g.count; }));
+  const topScorer = Object.entries(goalMap).sort((a,b) => b[1]-a[1])[0];
+  const topScorerPlayer = topScorer ? players.find(p => p.id === topScorer[0]) : null;
+  
+  // Next match
+  const today = new Date().toISOString().slice(0,10);
+  const nextMatch = [...matches].filter(m => m.date >= today).sort((a,b) => a.date.localeCompare(b.date))[0];
 
-    updateSummary();
-    await savePaymentStatus();
+  return (
+    <>
+      {/* Header band */}
+      <div style={{background:"linear-gradient(135deg, #0a2010 0%, #1a3a1a 100%)", borderRadius:16, padding:"24px 28px", marginBottom:24, border:"1px solid var(--border)", position:"relative", overflow:"hidden"}}>
+        <div style={{position:"absolute",right:20,top:"50%",transform:"translateY(-50%)",fontSize:80,opacity:0.08}}>{config.shield}</div>
+        <div style={{fontFamily:"Bebas Neue, sans-serif",fontSize:13,letterSpacing:3,color:"var(--muted)",marginBottom:4}}>BEM-VINDO AO</div>
+        <div style={{fontFamily:"Bebas Neue, sans-serif",fontSize:36,letterSpacing:2,color:"var(--green)"}}>{config.teamName}</div>
+        <div style={{fontSize:13,color:"var(--muted)",marginTop:4}}>
+          {mWon}V · {mDraw}E · {mLost}D · {totalGoals} gols marcados
+        </div>
+      </div>
+      
+      {/* Stats row */}
+      <div className="grid grid-4 section">
+        <div className="stat-card green">
+          <div className="stat-label">Saldo Atual</div>
+          <div className="stat-value" style={{fontSize:28}}>{fmt(balance)}</div>
+          <div className="stat-sub">Caixa do time</div>
+        </div>
+        <div className="stat-card red">
+          <div className="stat-label">Inadimplentes</div>
+          <div className="stat-value">{latePlayers.length}</div>
+          <div className="stat-sub">de {realPlayers.length} jogadores</div>
+        </div>
+        <div className="stat-card gold">
+          <div className="stat-label">Artilheiro</div>
+          <div className="stat-value" style={{fontSize:22}}>{topScorerPlayer ? topScorerPlayer.name.split(" ")[0] : "-"}</div>
+          <div className="stat-sub">{topScorer ? topScorer[1] : 0} gols</div>
+        </div>
+        <div className="stat-card blue">
+          <div className="stat-label">Próx. Jogo</div>
+          <div className="stat-value" style={{fontSize:22}}>{nextMatch ? fmtDate(nextMatch.date) : "A definir"}</div>
+          <div className="stat-sub">{nextMatch ? `vs ${nextMatch.rival}` : ""}</div>
+        </div>
+      </div>
+      
+      <div className="grid grid-2 section">
+        {/* Inadimplentes */}
+        <div className="card">
+          <div className="card-title">🔴 Jogadores Inadimplentes</div>
+          {latePlayers.length === 0 ? (
+            <div style={{color:"var(--green)",textAlign:"center",padding:20}}>✅ Todos em dia!</div>
+          ) : (
+            latePlayers.map(([pid, fee]) => {
+              const player = players.find(p => p.id === pid);
+              if (!player) return null;
+              return (
+                <div key={pid} className="rank-item">
+                  <div className="avatar" style={{width:36,height:36,fontSize:14}}>{player.photo ? <img src={player.photo} /> : initials(player.name)}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontWeight:600,fontSize:14}}>{player.name}</div>
+                    <div style={{fontSize:12,color:"var(--muted)"}}>Camisa {player.shirt} · {player.position}</div>
+                  </div>
+                  <div>
+                    <span className="badge badge-late">{fee.daysLate}d atraso</span>
+                  </div>
+                </div>
+              );
+            })
+          )}
+          <button className="btn btn-ghost btn-sm mt-3" style={{width:"100%"}} onClick={() => onNav("mensalidades")}>Ver todas mensalidades →</button>
+        </div>
+        
+        {/* Últimos jogos */}
+        <div className="card">
+          <div className="card-title">⚽ Últimos Resultados</div>
+          {[...matches].sort((a,b) => b.date.localeCompare(a.date)).slice(0,4).map(m => {
+            const res = m.scoreUs > m.scoreThem ? "win" : m.scoreUs < m.scoreThem ? "loss" : "draw";
+            return (
+              <div key={m.id} className="rank-item">
+                <span className={`badge badge-${res}`} style={{minWidth:24,justifyContent:"center"}}>{res === "win" ? "V" : res === "loss" ? "D" : "E"}</span>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:600,fontSize:14}}>vs {m.rival}</div>
+                  <div style={{fontSize:12,color:"var(--muted)"}}>{fmtDate(m.date)} · {m.local === "Casa" ? "🏠" : "✈️"} {m.field}</div>
+                </div>
+                <div style={{fontFamily:"Bebas Neue, sans-serif",fontSize:20}}>{m.scoreUs} × {m.scoreThem}</div>
+              </div>
+            );
+          })}
+          <button className="btn btn-ghost btn-sm mt-3" style={{width:"100%"}} onClick={() => onNav("jogos")}>Ver todos os jogos →</button>
+        </div>
+      </div>
+      
+      {/* Financial summary */}
+      <div className="card section">
+        <div className="card-title">💼 Resumo Financeiro</div>
+        <div className="grid grid-3">
+          <div style={{textAlign:"center"}}>
+            <div className="text-sm text-muted">Total Entradas</div>
+            <div style={{fontFamily:"Bebas Neue, sans-serif",fontSize:28,color:"var(--green)"}}>{fmt(income)}</div>
+          </div>
+          <div style={{textAlign:"center",borderLeft:"1px solid var(--border)",borderRight:"1px solid var(--border)"}}>
+            <div className="text-sm text-muted">Total Saídas</div>
+            <div style={{fontFamily:"Bebas Neue, sans-serif",fontSize:28,color:"var(--red)"}}>{fmt(expenses)}</div>
+          </div>
+          <div style={{textAlign:"center"}}>
+            <div className="text-sm text-muted">Saldo</div>
+            <div style={{fontFamily:"Bebas Neue, sans-serif",fontSize:28,color:balance>=0?"var(--green)":"var(--red)"}}>{fmt(balance)}</div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
 
-async function markAsUnpaid(n) {
-    const el = document.querySelector(`[data-installment="${n}"]`);
-    el.classList.remove("paid");
-    el.querySelector(".pay-button").style.display = "inline-block";
-    el.querySelector(".unpay-button").style.display = "none";
+// ─── MENSALIDADES PAGE ────────────────────────────────────────────────────────
+function MensalidadesPage({ players, fees, config, isAdmin, onUpdateFees }) {
+  const realPlayers = players.filter(p => p.role === "player");
+  const paidCount = Object.values(fees).filter(f => f.status === "paid").length;
+  
+  const markPaid = (pid) => {
+    const updated = { ...fees, [pid]: { status: "paid", daysLate: 0, paidAt: new Date().toISOString().slice(0,10) } };
+    onUpdateFees(updated);
+  };
+  const markLate = (pid) => {
+    const updated = { ...fees, [pid]: { status: "late", daysLate: Math.floor(Math.random()*20)+1, paidAt: null } };
+    onUpdateFees(updated);
+  };
 
-    updateSummary();
-    await savePaymentStatus();
+  return (
+    <>
+      <div className="grid grid-4 section">
+        <div className="stat-card green">
+          <div className="stat-label">Em Dia</div>
+          <div className="stat-value">{paidCount}</div>
+          <div className="stat-sub">jogadores</div>
+        </div>
+        <div className="stat-card red">
+          <div className="stat-label">Atrasados</div>
+          <div className="stat-value">{realPlayers.length - paidCount}</div>
+          <div className="stat-sub">jogadores</div>
+        </div>
+        <div className="stat-card gold">
+          <div className="stat-label">Mensalidade</div>
+          <div className="stat-value" style={{fontSize:26}}>{fmt(config.monthlyFee)}</div>
+          <div className="stat-sub">Venc. dia 10</div>
+        </div>
+        <div className="stat-card blue">
+          <div className="stat-label">A Receber</div>
+          <div className="stat-value" style={{fontSize:26}}>{fmt((realPlayers.length - paidCount) * config.monthlyFee)}</div>
+          <div className="stat-sub">em aberto</div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-title">💰 Status das Mensalidades</div>
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Jogador</th>
+                <th>Posição</th>
+                <th>Camisa</th>
+                <th>Status</th>
+                <th>Atraso</th>
+                <th>Pagamento</th>
+                {isAdmin && <th>Ação</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {realPlayers.map(p => {
+                const fee = fees[p.id] || { status: "late", daysLate: 0 };
+                return (
+                  <tr key={p.id} style={fee.status === "late" ? { background: "rgba(255,23,68,0.04)" } : {}}>
+                    <td>
+                      <div style={{display:"flex",alignItems:"center",gap:10}}>
+                        <div className="avatar" style={{width:32,height:32,fontSize:12}}>{p.photo ? <img src={p.photo} /> : initials(p.name)}</div>
+                        <span className="font-bold">{p.name}</span>
+                      </div>
+                    </td>
+                    <td className="text-muted">{p.position}</td>
+                    <td style={{fontFamily:"Bebas Neue, sans-serif",fontSize:18,color:"var(--gold)"}}>{p.shirt}</td>
+                    <td>
+                      <span className={`badge ${fee.status === "paid" ? "badge-paid" : "badge-late"}`}>
+                        {fee.status === "paid" ? "✅ Em dia" : "❌ Atrasado"}
+                      </span>
+                    </td>
+                    <td className={fee.status === "late" ? "text-red font-bold" : "text-muted"}>
+                      {fee.status === "late" ? `${fee.daysLate} dias` : "-"}
+                    </td>
+                    <td className="text-muted text-sm">{fee.paidAt ? fmtDate(fee.paidAt) : "-"}</td>
+                    {isAdmin && (
+                      <td>
+                        <div style={{display:"flex",gap:6}}>
+                          {fee.status === "late" ? (
+                            <button className="btn btn-primary btn-sm" onClick={() => markPaid(p.id)}>✓ Pago</button>
+                          ) : (
+                            <button className="btn btn-danger btn-sm" onClick={() => markLate(p.id)}>Rever</button>
+                          )}
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
+  );
 }
 
-function updateSummary() {
-    const total = document.querySelectorAll(".installment").length;
-    const paid = document.querySelectorAll(".installment.paid").length;
-    const pending = total - paid;
+// ─── FINANCEIRO PAGE ──────────────────────────────────────────────────────────
+function FinanceiroPage({ transactions, isAdmin, onUpdateTransactions }) {
+  const [tab, setTab] = useState("overview");
+  const [showForm, setShowForm] = useState(false);
+  const [filterMonth, setFilterMonth] = useState("");
+  const [form, setForm] = useState({ type: "expense", category: "Arbitragem", amount: "", date: new Date().toISOString().slice(0,10), note: "" });
 
-    let sum = 0;
-    document.querySelectorAll(".installment.paid").forEach(el => {
-        sum += parseFloat(el.dataset.value);
-    });
+  const income = transactions.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
+  const expenses = transactions.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0);
+  const balance = income - expenses;
 
-    document.getElementById("paidCount").textContent = paid;
-    document.getElementById("pendingCount").textContent = pending;
-    document.getElementById("totalPaid").textContent = 
-        "R$ " + sum.toFixed(2).replace(".", ",");
+  const filtered = filterMonth 
+    ? transactions.filter(t => t.date.startsWith(filterMonth))
+    : transactions;
+
+  const addTx = () => {
+    if (!form.amount || !form.date) return;
+    const tx = { id: `t${Date.now()}`, ...form, amount: parseFloat(form.amount) };
+    const updated = [...transactions, tx];
+    onUpdateTransactions(updated);
+    setForm({ type: "expense", category: "Arbitragem", amount: "", date: new Date().toISOString().slice(0,10), note: "" });
+    setShowForm(false);
+  };
+
+  const deleteTx = (id) => {
+    onUpdateTransactions(transactions.filter(t => t.id !== id));
+  };
+
+  const incomeCategories = ["Mensalidades", "Patrocínio", "Jogos em casa", "Outro"];
+  const expenseCategories = ["Arbitragem", "Manutenção de campo", "Jogo fora", "Outro"];
+
+  return (
+    <>
+      <div className="grid grid-4 section">
+        <div className="stat-card green">
+          <div className="stat-label">Entradas</div>
+          <div className="stat-value" style={{fontSize:24}}>{fmt(income)}</div>
+        </div>
+        <div className="stat-card red">
+          <div className="stat-label">Saídas</div>
+          <div className="stat-value" style={{fontSize:24}}>{fmt(expenses)}</div>
+        </div>
+        <div className="stat-card" style={{"--accent": balance>=0?"var(--green)":"var(--red)"}}>
+          <div className="stat-label">Saldo</div>
+          <div className="stat-value" style={{fontSize:24,color:balance>=0?"var(--green)":"var(--red)"}}>{fmt(balance)}</div>
+        </div>
+        <div className="stat-card gold">
+          <div className="stat-label">Movimentações</div>
+          <div className="stat-value">{transactions.length}</div>
+        </div>
+      </div>
+
+      <div className="tabs">
+        <button className={`tab ${tab==="overview"?"active":""}`} onClick={() => setTab("overview")}>Extrato</button>
+        <button className={`tab ${tab==="income"?"active":""}`} onClick={() => setTab("income")}>Entradas</button>
+        <button className={`tab ${tab==="expenses"?"active":""}`} onClick={() => setTab("expenses")}>Saídas</button>
+      </div>
+
+      <div className="card">
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:10}}>
+          <div className="card-title" style={{marginBottom:0}}>
+            {tab === "overview" ? "💼 Extrato Geral" : tab === "income" ? "📥 Entradas" : "📤 Saídas"}
+          </div>
+          <div style={{display:"flex",gap:10,alignItems:"center"}}>
+            <input type="month" className="inp" style={{width:"auto"}} value={filterMonth} onChange={e => setFilterMonth(e.target.value)} />
+            {filterMonth && <button className="btn btn-ghost btn-sm" onClick={() => setFilterMonth("")}>✕</button>}
+            {isAdmin && <button className="btn btn-primary btn-sm" onClick={() => setShowForm(!showForm)}>+ Lançamento</button>}
+          </div>
+        </div>
+        
+        {showForm && isAdmin && (
+          <div style={{background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:10,padding:16,marginBottom:16}}>
+            <div className="form-grid">
+              <div className="input-group">
+                <label>Tipo</label>
+                <select className="inp" value={form.type} onChange={e => setForm({...form, type: e.target.value, category: e.target.value === "income" ? "Mensalidades" : "Arbitragem"})}>
+                  <option value="income">Entrada</option>
+                  <option value="expense">Saída</option>
+                </select>
+              </div>
+              <div className="input-group">
+                <label>Categoria</label>
+                <select className="inp" value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
+                  {(form.type === "income" ? incomeCategories : expenseCategories).map(c => <option key={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className="input-group">
+                <label>Valor (R$)</label>
+                <input className="inp" type="number" step="0.01" value={form.amount} onChange={e => setForm({...form, amount: e.target.value})} placeholder="0,00" />
+              </div>
+              <div className="input-group">
+                <label>Data</label>
+                <input className="inp" type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} />
+              </div>
+              <div className="input-group form-full">
+                <label>Observação</label>
+                <input className="inp" value={form.note} onChange={e => setForm({...form, note: e.target.value})} placeholder="Descrição..." />
+              </div>
+            </div>
+            <div className="form-actions">
+              <button className="btn btn-ghost btn-sm" onClick={() => setShowForm(false)}>Cancelar</button>
+              <button className="btn btn-primary btn-sm" onClick={addTx}>Salvar</button>
+            </div>
+          </div>
+        )}
+        
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Tipo</th>
+                <th>Categoria</th>
+                <th>Observação</th>
+                <th className="text-right">Valor</th>
+                {isAdmin && <th></th>}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered
+                .filter(t => tab === "overview" ? true : tab === "income" ? t.type === "income" : t.type === "expense")
+                .sort((a,b) => b.date.localeCompare(a.date))
+                .map(t => (
+                <tr key={t.id}>
+                  <td className="text-muted text-sm">{fmtDate(t.date)}</td>
+                  <td>
+                    <span className={`badge ${t.type === "income" ? "badge-paid" : "badge-late"}`}>
+                      {t.type === "income" ? "↑ Entrada" : "↓ Saída"}
+                    </span>
+                  </td>
+                  <td>{t.category}</td>
+                  <td className="text-muted text-sm">{t.note}</td>
+                  <td className={`text-right font-bold ${t.type === "income" ? "text-green" : "text-red"}`}>
+                    {t.type === "income" ? "+" : "-"}{fmt(t.amount)}
+                  </td>
+                  {isAdmin && (
+                    <td>
+                      <button className="btn btn-danger btn-icon btn-sm" onClick={() => deleteTx(t.id)}>🗑</button>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
+  );
 }
 
-// Ativa modo admin
-document.getElementById("adminMode").addEventListener("change", function () {
-    if (this.checked) {
-        const senha = prompt("Digite a senha do administrador:");
-        if (senha === "MS-parcela-wevertton8x") {
-            document.querySelectorAll(".admin-controls")
-                .forEach(c => c.classList.add("active"));
-        } else {
-            alert("Senha incorreta!");
-            this.checked = false;
-        }
-    } else {
-        document.querySelectorAll(".admin-controls")
-            .forEach(c => c.classList.remove("active"));
-    }
-});
+// ─── JOGOS PAGE ───────────────────────────────────────────────────────────────
+function JogosPage({ matches, players, isAdmin, onUpdateMatches }) {
+  const [showForm, setShowForm] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState(null);
+  const [form, setForm] = useState({
+    date: "", local: "Casa", field: "", rival: "", scoreUs: 0, scoreThem: 0,
+    goals: [], attendance: []
+  });
 
-window.onload = loadPaymentStatus;
+  const realPlayers = players.filter(p => p.role === "player");
 
-</script>
+  // Stats
+  const won = matches.filter(m => m.scoreUs > m.scoreThem).length;
+  const lost = matches.filter(m => m.scoreUs < m.scoreThem).length;
+  const draw = matches.filter(m => m.scoreUs === m.scoreThem).length;
+  const totalGoals = matches.reduce((s, m) => s + m.scoreUs, 0);
 
-</body>
-</html>
+  // Goal ranking
+  const goalMap = {};
+  matches.forEach(m => m.goals.forEach(g => { goalMap[g.playerId] = (goalMap[g.playerId] || 0) + g.count; }));
+  const ranking = Object.entries(goalMap).sort((a,b) => b[1]-a[1]);
+
+  const addMatch = () => {
+    const m = { id: `m${Date.now()}`, ...form };
+    const updated = [...matches, m];
+    onUpdateMatches(updated);
+    setShowForm(false);
+    setForm({ date:"",local:"Casa",field:"",rival:"",scoreUs:0,scoreThem:0,goals:[],attendance:[] });
+  };
+
+  const deleteMatch = (id) => onUpdateMatches(matches.filter(m => m.id !== id));
+
+  return (
+    <>
+      <div className="grid grid-4 section">
+        <div className="stat-card green">
+          <div className="stat-label">Vitórias</div>
+          <div className="stat-value">{won}</div>
+        </div>
+        <div className="stat-card red">
+          <div className="stat-label">Derrotas</div>
+          <div className="stat-value">{lost}</div>
+        </div>
+        <div className="stat-card gold">
+          <div className="stat-label">Empates</div>
+          <div className="stat-value">{draw}</div>
+        </div>
+        <div className="stat-card blue">
+          <div className="stat-label">Gols Marcados</div>
+          <div className="stat-value">{totalGoals}</div>
+        </div>
+      </div>
+
+      <div className="grid grid-2 section">
+        {/* Matches list */}
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+            <div style={{fontFamily:"Bebas Neue, sans-serif",fontSize:18,color:"var(--muted)",letterSpacing:1}}>HISTÓRICO DE JOGOS</div>
+            {isAdmin && <button className="btn btn-primary btn-sm" onClick={() => setShowForm(true)}>+ Jogo</button>}
+          </div>
+          {[...matches].sort((a,b) => b.date.localeCompare(a.date)).map(m => {
+            const res = m.scoreUs > m.scoreThem ? "win" : m.scoreUs < m.scoreThem ? "loss" : "draw";
+            const scorers = m.goals.flatMap(g => {
+              const p = players.find(pl => pl.id === g.playerId);
+              return Array(g.count).fill(p ? p.name.split(" ")[0] : "?");
+            });
+            return (
+              <div key={m.id} className="match-card" onClick={() => setSelectedMatch(selectedMatch?.id === m.id ? null : m)} style={{cursor:"pointer"}}>
+                <span className={`badge badge-${res}`} style={{minWidth:28,justifyContent:"center",fontSize:14}}>
+                  {res === "win" ? "V" : res === "loss" ? "D" : "E"}
+                </span>
+                <div className="match-info">
+                  <div className="match-rival">vs {m.rival}</div>
+                  <div className="match-meta">{fmtDate(m.date)} · {m.local === "Casa" ? "🏠" : "✈️"} {m.field}</div>
+                  {scorers.length > 0 && <div style={{fontSize:11,color:"var(--green)",marginTop:3}}>⚽ {scorers.join(", ")}</div>}
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div className="match-score">{m.scoreUs} × {m.scoreThem}</div>
+                  {isAdmin && (
+                    <button className="btn btn-danger btn-icon btn-sm mt-1" onClick={e => { e.stopPropagation(); deleteMatch(m.id); }}>🗑</button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Artilharia ranking */}
+        <div className="card">
+          <div className="card-title">🏆 Ranking de Artilharia</div>
+          {ranking.length === 0 ? (
+            <div className="text-muted text-sm" style={{textAlign:"center",padding:20}}>Nenhum gol registrado</div>
+          ) : ranking.map(([pid, goals], i) => {
+            const p = players.find(pl => pl.id === pid);
+            if (!p) return null;
+            const posClass = i === 0 ? "gold" : i === 1 ? "silver" : i === 2 ? "bronze" : "";
+            return (
+              <div key={pid} className="rank-item">
+                <div className={`rank-pos ${posClass}`}>{i+1}</div>
+                <div className="avatar" style={{width:36,height:36,fontSize:13}}>{p.photo ? <img src={p.photo} /> : initials(p.name)}</div>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:600}}>{p.name}</div>
+                  <div style={{fontSize:12,color:"var(--muted)"}}>{p.position}</div>
+                </div>
+                <div style={{fontFamily:"Bebas Neue, sans-serif",fontSize:24,color:"var(--gold)"}}>{goals}</div>
+                <div style={{fontSize:11,color:"var(--muted)"}}>gols</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Add match modal */}
+      {showForm && isAdmin && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-title">
+              Cadastrar Jogo
+              <button className="modal-close" onClick={() => setShowForm(false)}>✕</button>
+            </div>
+            <div className="form-grid">
+              <div className="input-group">
+                <label>Data</label>
+                <input className="inp" type="date" value={form.date} onChange={e => setForm({...form,date:e.target.value})} />
+              </div>
+              <div className="input-group">
+                <label>Local</label>
+                <select className="inp" value={form.local} onChange={e => setForm({...form,local:e.target.value})}>
+                  <option>Casa</option>
+                  <option>Fora</option>
+                </select>
+              </div>
+              <div className="input-group">
+                <label>Nome do Campo</label>
+                <input className="inp" value={form.field} onChange={e => setForm({...form,field:e.target.value})} placeholder="Ex: Arena Municipal" />
+              </div>
+              <div className="input-group">
+                <label>Adversário</label>
+                <input className="inp" value={form.rival} onChange={e => setForm({...form,rival:e.target.value})} placeholder="Nome do time rival" />
+              </div>
+              <div className="input-group">
+                <label>Nosso Placar</label>
+                <input className="inp" type="number" min="0" value={form.scoreUs} onChange={e => setForm({...form,scoreUs:parseInt(e.target.value)||0})} />
+              </div>
+              <div className="input-group">
+                <label>Placar Adversário</label>
+                <input className="inp" type="number" min="0" value={form.scoreThem} onChange={e => setForm({...form,scoreThem:parseInt(e.target.value)||0})} />
+              </div>
+              <div className="input-group form-full">
+                <label>Marcaram Gols</label>
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  {realPlayers.map(p => (
+                    <div key={p.id} style={{display:"flex",alignItems:"center",gap:10}}>
+                      <span style={{flex:1,fontSize:13}}>{p.name}</span>
+                      <input className="inp" type="number" min="0" style={{width:60}} 
+                        value={form.goals.find(g=>g.playerId===p.id)?.count||0}
+                        onChange={e => {
+                          const count = parseInt(e.target.value)||0;
+                          const gs = form.goals.filter(g=>g.playerId!==p.id);
+                          if (count > 0) gs.push({playerId:p.id,count});
+                          setForm({...form,goals:gs});
+                        }}
+                      />
+                      <span style={{fontSize:11,color:"var(--muted)"}}>gols</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="input-group form-full">
+                <label>Presentes</label>
+                <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+                  {realPlayers.map(p => (
+                    <label key={p.id} style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer",fontSize:13,background:"var(--bg3)",padding:"6px 10px",borderRadius:6,border:"1px solid var(--border)"}}>
+                      <input type="checkbox" 
+                        checked={form.attendance.includes(p.id)}
+                        onChange={e => {
+                          const att = e.target.checked ? [...form.attendance, p.id] : form.attendance.filter(x=>x!==p.id);
+                          setForm({...form,attendance:att});
+                        }}
+                      />
+                      {p.name.split(" ")[0]}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="form-actions">
+              <button className="btn btn-ghost" onClick={() => setShowForm(false)}>Cancelar</button>
+              <button className="btn btn-primary" onClick={addMatch}>Salvar Jogo</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ─── PRESENÇA PAGE ────────────────────────────────────────────────────────────
+function PresencaPage({ matches, players }) {
+  const realPlayers = players.filter(p => p.role === "player");
+  const totalMatches = matches.length;
+
+  const getStats = (pid) => {
+    const present = matches.filter(m => m.attendance.includes(pid)).length;
+    return { present, absent: totalMatches - present, pct: totalMatches ? Math.round((present / totalMatches) * 100) : 0 };
+  };
+
+  const ranking = realPlayers.map(p => ({ player: p, ...getStats(p.id) })).sort((a,b) => b.pct - a.pct);
+
+  return (
+    <>
+      <div className="grid grid-3 section">
+        <div className="stat-card green">
+          <div className="stat-label">Total de Jogos</div>
+          <div className="stat-value">{totalMatches}</div>
+        </div>
+        <div className="stat-card blue">
+          <div className="stat-label">Jogadores</div>
+          <div className="stat-value">{realPlayers.length}</div>
+        </div>
+        <div className="stat-card gold">
+          <div className="stat-label">Mais Presente</div>
+          <div className="stat-value" style={{fontSize:20}}>{ranking[0]?.player.name.split(" ")[0] || "-"}</div>
+          <div className="stat-sub">{ranking[0]?.pct || 0}% presença</div>
+        </div>
+      </div>
+
+      <div className="grid grid-2 section">
+        {/* Ranking */}
+        <div className="card">
+          <div className="card-title">🏆 Ranking de Comprometimento</div>
+          {ranking.map((r, i) => {
+            const posClass = i === 0 ? "gold" : i === 1 ? "silver" : i === 2 ? "bronze" : "";
+            return (
+              <div key={r.player.id} className="rank-item">
+                <div className={`rank-pos ${posClass}`}>{i+1}</div>
+                <div className="avatar" style={{width:36,height:36,fontSize:13}}>{r.player.photo ? <img src={r.player.photo} /> : initials(r.player.name)}</div>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:600,fontSize:14}}>{r.player.name}</div>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginTop:4}}>
+                    <div className="progress-bar" style={{flex:1}}>
+                      <div className="progress-fill" style={{width:`${r.pct}%`, background: r.pct >= 70 ? "var(--green)" : r.pct >= 50 ? "var(--gold)" : "var(--red)"}} />
+                    </div>
+                    <span style={{fontSize:12,color:"var(--muted)",minWidth:35}}>{r.pct}%</span>
+                  </div>
+                </div>
+                <div style={{textAlign:"right",fontSize:13}}>
+                  <div className="text-green font-bold">{r.present} pres.</div>
+                  <div className="text-red text-sm">{r.absent} falt.</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* By match */}
+        <div className="card">
+          <div className="card-title">📅 Presença por Jogo</div>
+          {[...matches].sort((a,b) => b.date.localeCompare(a.date)).map(m => (
+            <div key={m.id} style={{marginBottom:12,paddingBottom:12,borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                <div>
+                  <div style={{fontWeight:600,fontSize:14}}>vs {m.rival}</div>
+                  <div style={{fontSize:12,color:"var(--muted)"}}>{fmtDate(m.date)}</div>
+                </div>
+                <div style={{fontFamily:"Bebas Neue, sans-serif",fontSize:20}}>{m.attendance.length}/{realPlayers.length}</div>
+              </div>
+              <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+                {realPlayers.map(p => (
+                  <div key={p.id} title={p.name} style={{
+                    width:28,height:28,borderRadius:6,
+                    background: m.attendance.includes(p.id) ? "rgba(0,200,83,0.2)" : "rgba(255,23,68,0.1)",
+                    border: `1px solid ${m.attendance.includes(p.id) ? "var(--green)" : "rgba(255,23,68,0.3)"}`,
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                    fontSize:10,fontWeight:700,
+                    color: m.attendance.includes(p.id) ? "var(--green)" : "var(--red)"
+                  }}>
+                    {p.shirt}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── ELENCO PAGE ──────────────────────────────────────────────────────────────
+function ElencoPage({ players, fees, isAdmin, currentUser, onUpdatePlayers, onModal }) {
+  const [editPlayer, setEditPlayer] = useState(null);
+  const [showAdd, setShowAdd] = useState(false);
+  const [form, setForm] = useState({ name:"",phone:"",position:"Goleiro",shirt:"",dob:"",login:"",password:"",role:"player" });
+  const realPlayers = players.filter(p => p.role === "player");
+
+  const positions = ["Goleiro","Zagueiro","Lateral Direito","Lateral Esquerdo","Volante","Meia","Atacante"];
+
+  const savePlayer = () => {
+    if (!form.name || !form.login || !form.password) return;
+    const updated = [...players, { id: `p${Date.now()}`, ...form, shirt: parseInt(form.shirt)||0, photo: null, subscriptionId: null }];
+    onUpdatePlayers(updated);
+    setShowAdd(false);
+    setForm({ name:"",phone:"",position:"Goleiro",shirt:"",dob:"",login:"",password:"",role:"player" });
+  };
+
+  const updatePlayer = (id, data) => {
+    const updated = players.map(p => p.id === id ? { ...p, ...data } : p);
+    onUpdatePlayers(updated);
+    setEditPlayer(null);
+  };
+
+  const deletePlayer = (id) => {
+    if (id === currentUser.id) return;
+    onUpdatePlayers(players.filter(p => p.id !== id));
+  };
+
+  return (
+    <>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+        <div style={{fontFamily:"Bebas Neue, sans-serif",fontSize:24,letterSpacing:1}}>
+          {realPlayers.length} Jogadores
+        </div>
+        {isAdmin && (
+          <button className="btn btn-primary" onClick={() => setShowAdd(true)}>+ Cadastrar Jogador</button>
+        )}
+      </div>
+
+      <div className="grid grid-auto">
+        {realPlayers.map(p => {
+          const fee = fees[p.id] || { status: "late" };
+          return (
+            <div key={p.id} className={`player-card ${fee.status === "late" ? "late" : ""}`}>
+              <div className="player-shirt">{p.shirt}</div>
+              <div className="player-avatar">
+                {p.photo ? <img src={p.photo} /> : initials(p.name)}
+              </div>
+              <div className="player-name">{p.name}</div>
+              <div className="player-pos">{p.position}</div>
+              <span className={`badge ${fee.status === "paid" ? "badge-paid" : "badge-late"}`} style={{fontSize:10}}>
+                {fee.status === "paid" ? "✅ Em dia" : `❌ ${fee.daysLate}d atraso`}
+              </span>
+              {p.dob && <div style={{fontSize:11,color:"var(--muted)"}}>🎂 {fmtDate(p.dob)}</div>}
+              {isAdmin && (
+                <div style={{display:"flex",gap:6,marginTop:4}}>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setEditPlayer(p)}>Editar</button>
+                  <button className="btn btn-danger btn-sm" onClick={() => deletePlayer(p.id)}>🗑</button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Add player */}
+      {showAdd && isAdmin && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-title">
+              Cadastrar Jogador
+              <button className="modal-close" onClick={() => setShowAdd(false)}>✕</button>
+            </div>
+            <PlayerForm form={form} setForm={setForm} positions={positions} />
+            <div className="form-actions">
+              <button className="btn btn-ghost" onClick={() => setShowAdd(false)}>Cancelar</button>
+              <button className="btn btn-primary" onClick={savePlayer}>Cadastrar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit player */}
+      {editPlayer && isAdmin && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-title">
+              Editar Jogador
+              <button className="modal-close" onClick={() => setEditPlayer(null)}>✕</button>
+            </div>
+            <PlayerForm form={editPlayer} setForm={(v) => setEditPlayer(typeof v === "function" ? v(editPlayer) : v)} positions={positions} />
+            <div className="form-actions">
+              <button className="btn btn-ghost" onClick={() => setEditPlayer(null)}>Cancelar</button>
+              <button className="btn btn-primary" onClick={() => updatePlayer(editPlayer.id, editPlayer)}>Salvar</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+function PlayerForm({ form, setForm, positions }) {
+  return (
+    <div className="form-grid">
+      <div className="input-group form-full">
+        <label>Nome Completo</label>
+        <input className="inp" value={form.name||""} onChange={e => setForm({...form,name:e.target.value})} placeholder="Nome do jogador" />
+      </div>
+      <div className="input-group">
+        <label>Posição</label>
+        <select className="inp" value={form.position||"Goleiro"} onChange={e => setForm({...form,position:e.target.value})}>
+          {positions.map(p => <option key={p}>{p}</option>)}
+        </select>
+      </div>
+      <div className="input-group">
+        <label>Nº Camisa</label>
+        <input className="inp" type="number" value={form.shirt||""} onChange={e => setForm({...form,shirt:e.target.value})} placeholder="10" />
+      </div>
+      <div className="input-group">
+        <label>Telefone</label>
+        <input className="inp" value={form.phone||""} onChange={e => setForm({...form,phone:e.target.value})} placeholder="(11) 99999-0000" />
+      </div>
+      <div className="input-group">
+        <label>Data de Nascimento</label>
+        <input className="inp" type="date" value={form.dob||""} onChange={e => setForm({...form,dob:e.target.value})} />
+      </div>
+      <div className="input-group">
+        <label>Login</label>
+        <input className="inp" value={form.login||""} onChange={e => setForm({...form,login:e.target.value})} placeholder="login123" />
+      </div>
+      <div className="input-group">
+        <label>Senha</label>
+        <input className="inp" value={form.password||""} onChange={e => setForm({...form,password:e.target.value})} placeholder="••••••" />
+      </div>
+    </div>
+  );
+}
+
+// ─── CONFIG PAGE ──────────────────────────────────────────────────────────────
+function ConfigPage({ config, onUpdateConfig }) {
+  const [form, setForm] = useState(config);
+  const save = () => onUpdateConfig(form);
+  
+  return (
+    <div className="card" style={{maxWidth:600}}>
+      <div className="card-title">⚙️ Configurações do Time</div>
+      <div className="form-grid">
+        <div className="input-group form-full">
+          <label>Nome do Time</label>
+          <input className="inp" value={form.teamName} onChange={e => setForm({...form,teamName:e.target.value})} />
+        </div>
+        <div className="input-group">
+          <label>Escudo (emoji ou texto)</label>
+          <input className="inp" value={form.shield} onChange={e => setForm({...form,shield:e.target.value})} />
+        </div>
+        <div className="input-group">
+          <label>Valor da Mensalidade (R$)</label>
+          <input className="inp" type="number" step="0.01" value={form.monthlyFee} onChange={e => setForm({...form,monthlyFee:parseFloat(e.target.value)||0})} />
+        </div>
+      </div>
+      <div style={{marginTop:16,padding:16,background:"var(--bg3)",borderRadius:10,fontSize:13,color:"var(--muted)"}}>
+        <strong style={{color:"var(--gold)"}}>💡 Integração com Asaas:</strong> Para ativar cobranças automáticas via PIX e cartão de crédito, configure sua chave de API Asaas nas variáveis de ambiente do servidor. O sistema suporta assinaturas recorrentes com vencimento dia 10.
+      </div>
+      <div className="form-actions">
+        <button className="btn btn-primary" onClick={save}>Salvar Configurações</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── MODAL ────────────────────────────────────────────────────────────────────
+function Modal({ title, children, onClose }) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-title">
+          {title}
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
